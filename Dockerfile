@@ -33,7 +33,9 @@ RUN echo '#!/bin/bash' > /start.sh && \
     echo 'export APACHE_RUN_GROUP=www-data' >> /start.sh && \
     echo 'export APACHE_LOG_DIR=/var/log/apache2' >> /start.sh && \
     echo 'export APACHE_PID_FILE=/tmp/apache2.pid' >> /start.sh && \
-    echo 'export APACHE_LOCK_DIR=/tmp/apache2' && \
+    echo 'export APACHE_RUN_DIR=/tmp/apache2' >> /start.sh && \
+    echo 'export APACHE_LOCK_DIR=/tmp/apache2' >> /start.sh && \
+    echo 'mkdir -p /tmp/apache2' >> /start.sh && \
     echo 'sed -i "s/\${PORT}/$PORT/g" /etc/apache2/ports.conf' >> /start.sh && \
     echo 'sed -i "s/\${PORT}/$PORT/g" /etc/apache2/sites-available/000-default.conf' >> /start.sh && \
     echo 'apache2 -D FOREGROUND' >> /start.sh && \
