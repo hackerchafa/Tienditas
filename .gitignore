@@ -1,0 +1,44 @@
+# Archivos que NO deben subirse a GitHub
+# Para proteger información sensible
+
+# Variables de entorno (contiene passwords)
+.env
+
+# Logs del sistema
+logs/
+*.log
+
+# Cache del sistema
+cache/
+tmp/
+
+# Archivos de configuración local
+config-local.php
+
+# Archivos subidos por usuarios
+uploads/
+files/
+
+# Backups de base de datos
+backups/
+*.sql.backup
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Archivos de PHP
+vendor/
+composer.lock
+
+# Archivos temporales
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Archivos de prueba local
+test-local.php
+debug.php

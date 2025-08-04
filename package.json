@@ -1,0 +1,27 @@
+{
+  "name": "tiendita-mejorada",
+  "version": "1.0.0",
+  "description": "Sistema de gestión de tienda con MySQL y PHP",
+  "main": "index.html",
+  "scripts": {
+    "start": "php -S 0.0.0.0:$PORT",
+    "dev": "php -S localhost:8000",
+    "test": "php test-railway.php"
+  },
+  "keywords": [
+    "tienda",
+    "php",
+    "mysql",
+    "punto-de-venta",
+    "inventario"
+  ],
+  "author": "Tu Nombre",
+  "license": "MIT",
+  "engines": {
+    "php": ">=7.4.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tu-usuario/tiendita-mejorada.git"
+  }
+}

@@ -1,0 +1,2894 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TienditaMejorada - Sistema de Inventario y Ventas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Conector de Base de Datos -->
+    <script src="js/database-connector.js"></script>
+    <style>
+        /* Estilos personalizados para mejorar la experiencia */
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Clases semánticas para futura conexión con API */
+        .api-login-form { /* Formulario de login */ }
+        .api-register-form { /* Formulario de registro */ }
+        .api-logout-btn { /* Botón de logout */ }
+        .role-jefe { /* Elementos específicos del jefe */ }
+        .role-empleado { /* Elementos específicos del empleado */ }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    
+    <!-- PANTALLA DE INICIO DE SESIÓN -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+            <div class="text-center mb-8">
+                <i class="fas fa-store text-4xl text-blue-600 mb-4"></i>
+                <h1 class="text-2xl font-bold text-gray-800">TienditaMejorada</h1>
+                <p class="text-gray-600">Sistema de Inventario y Ventas</p>
+            </div>
+
+            <!-- Formulario de Login -->
+            <div id="loginForm" class="api-login-form">
+                <h2 class="text-xl font-semibold mb-4 text-center">Iniciar Sesión</h2>
+                <form id="loginFormElement" data-api-endpoint="/api/auth/login">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            <i class="fas fa-user mr-2"></i>Usuario
+                        </label>
+                        <input type="text" id="loginUsername" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                               placeholder="Ingrese su usuario" required data-field="username">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            <i class="fas fa-lock mr-2"></i>Contraseña
+                        </label>
+                        <input type="password" id="loginPassword" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                               placeholder="Ingrese su contraseña" required data-field="password">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión
+                    </button>
+                </form>
+                
+                <div class="mt-4 text-center">
+                    <p class="text-sm text-gray-600">
+                        ¿Eres jefe y no tienes cuenta? 
+                        <button id="showRegisterBtn" class="text-blue-600 hover:underline">Regístrate aquí</button>
+                    </p>
+                    <p class="text-xs text-gray-500 mt-2">
+                        Los empleados deben ser registrados por el jefe
+                    </p>
+                </div>
+            </div>
+
+            <!-- Formulario de Registro (Solo para Jefes) -->
+            <div id="registerForm" class="api-register-form hidden">
+                <h2 class="text-xl font-semibold mb-4 text-center">Registro de Jefe</h2>
+                <form id="registerFormElement" data-api-endpoint="/api/auth/register">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            <i class="fas fa-user mr-2"></i>Nombre Completo
+                        </label>
+                        <input type="text" id="registerName" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                               placeholder="Ingrese su nombre completo" required data-field="fullName">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            <i class="fas fa-user-circle mr-2"></i>Usuario
+                        </label>
+                        <input type="text" id="registerUsername" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                               placeholder="Elija un nombre de usuario" required data-field="username">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            <i class="fas fa-envelope mr-2"></i>Email
+                        </label>
+                        <input type="email" id="registerEmail" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                               placeholder="correo@ejemplo.com" required data-field="email">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            <i class="fas fa-store mr-2"></i>Nombre de la Tienda
+                        </label>
+                        <input type="text" id="registerStoreName" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                               placeholder="Nombre de su tienda" required data-field="storeName">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            <i class="fas fa-lock mr-2"></i>Contraseña
+                        </label>
+                        <input type="password" id="registerPassword" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                               placeholder="Cree una contraseña segura" required data-field="password">
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300">
+                        <i class="fas fa-user-plus mr-2"></i>Registrarse como Jefe
+                    </button>
+                </form>
+                
+                <div class="mt-4 text-center">
+                    <button id="showLoginBtn" class="text-blue-600 hover:underline text-sm">
+                        ¿Ya tienes cuenta? Inicia sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA PRINCIPAL DEL SISTEMA (Oculta inicialmente) -->
+    <div id="mainSystem" class="hidden">
+        <!-- Header con información del usuario -->
+        <header class="bg-white shadow-md">
+            <div class="flex justify-between items-center px-6 py-4">
+                <div class="flex items-center">
+                    <i class="fas fa-store text-2xl text-blue-600 mr-3"></i>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800">TienditaMejorada</h1>
+                        <p id="storeInfo" class="text-sm text-gray-600"></p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p id="userWelcome" class="font-semibold text-gray-800"></p>
+                        <p id="userRole" class="text-sm text-gray-600"></p>
+                    </div>
+                    <button id="logoutBtn" class="api-logout-btn bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-300" 
+                            data-api-endpoint="/api/auth/logout">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navegación lateral -->
+        <div class="flex">
+            <aside id="sidebar" class="bg-gray-800 text-white w-64 min-h-screen">
+                <!-- El contenido del sidebar se cargará dinámicamente según el rol -->
+            </aside>
+
+            <!-- Contenido principal -->
+            <main id="mainContent" class="flex-1 p-6 bg-gray-100">
+                <!-- El contenido principal se cargará dinámicamente -->
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // SISTEMA DE AUTENTICACIÓN Y SESIÓN SIMULADO
+        class AuthSystem {
+            constructor() {
+                this.currentUser = null;
+                this.users = this.loadUsers();
+                this.initializeEventListeners();
+            }
+
+            // Carga usuarios simulados (en producción vendría de la API)
+            loadUsers() {
+                const defaultUsers = {
+                    // Jefe de ejemplo
+                    'jefe1': {
+                        id: 1,
+                        username: 'jefe1',
+                        password: '123456',
+                        role: 'jefe',
+                        fullName: 'Carlos Rodríguez',
+                        email: 'carlos@tienda.com',
+                        storeName: 'Tienda Don Carlos',
+                        storeId: 1
+                    },
+                    // Empleado de ejemplo
+                    'empleado1': {
+                        id: 2,
+                        username: 'empleado1',
+                        password: '123456',
+                        role: 'empleado',
+                        fullName: 'María González',
+                        email: 'maria@tienda.com',
+                        storeName: 'Tienda Don Carlos',
+                        storeId: 1,
+                        employedBy: 1
+                    }
+                };
+
+                // Intentar cargar desde localStorage, sino usar datos por defecto
+                const saved = localStorage.getItem('tiendita_users');
+                return saved ? JSON.parse(saved) : defaultUsers;
+            }
+
+            // Guarda usuarios en localStorage (simulación de persistencia)
+            saveUsers() {
+                localStorage.setItem('tiendita_users', JSON.stringify(this.users));
+            }
+
+            // Inicializa los event listeners
+            initializeEventListeners() {
+                // Formulario de login
+                document.getElementById('loginFormElement').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleLogin();
+                });
+
+                // Formulario de registro
+                document.getElementById('registerFormElement').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleRegister();
+                });
+
+                // Botones para cambiar entre login y registro
+                document.getElementById('showRegisterBtn').addEventListener('click', () => {
+                    this.showRegisterForm();
+                });
+
+                document.getElementById('showLoginBtn').addEventListener('click', () => {
+                    this.showLoginForm();
+                });
+
+                // Botón de logout
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    this.handleLogout();
+                });
+
+                // Verificar si hay sesión activa
+                this.checkExistingSession();
+            }
+
+            // Maneja el proceso de login
+            async handleLogin() {
+                const username = document.getElementById('loginUsername').value.trim();
+                const password = document.getElementById('loginPassword').value;
+
+                if (!username || !password) {
+                    this.showMessage('Por favor complete todos los campos', 'error');
+                    return;
+                }
+
+                try {
+                    // Mostrar indicador de carga
+                    const loginBtn = document.querySelector('#loginFormElement button[type="submit"]');
+                    const originalText = loginBtn.innerHTML;
+                    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Iniciando sesión...';
+                    loginBtn.disabled = true;
+
+                    // Intentar login con base de datos
+                    const response = await window.dbConnector.login(username, password);
+                    
+                    if (response.success) {
+                        this.currentUser = response.user;
+                        this.showMessage(`¡Bienvenido ${response.user.nombre_completo}!`, 'success');
+                        
+                        if (response.offline) {
+                            this.showMessage('Trabajando en modo offline', 'warning');
+                        }
+                        
+                        setTimeout(() => {
+                            this.showMainSystem();
+                        }, 1000);
+                    } else {
+                        throw new Error(response.error || 'Error de autenticación');
+                    }
+                } catch (error) {
+                    console.error('Error en login:', error);
+                    this.showMessage(error.message || 'Error al iniciar sesión', 'error');
+                    
+                    // Restaurar botón
+                    const loginBtn = document.querySelector('#loginFormElement button[type="submit"]');
+                    loginBtn.innerHTML = originalText;
+                    loginBtn.disabled = false;
+                }
+            }
+
+            // Maneja el proceso de registro (solo jefes)
+            async handleRegister() {
+                const formData = {
+                    username: document.getElementById('registerUsername').value.trim(),
+                    password: document.getElementById('registerPassword').value,
+                    nombre_completo: document.getElementById('registerName').value.trim(),
+                    email: document.getElementById('registerEmail').value.trim(),
+                    tienda_nombre: document.getElementById('registerStoreName').value.trim()
+                };
+
+                // Validaciones
+                if (!formData.username || !formData.password || !formData.nombre_completo || 
+                    !formData.email || !formData.tienda_nombre) {
+                    this.showMessage('Por favor complete todos los campos', 'error');
+                    return;
+                }
+
+                if (!window.dbConnector.constructor.validateEmail(formData.email)) {
+                    this.showMessage('Por favor ingrese un email válido', 'error');
+                    return;
+                }
+
+                try {
+                    // Mostrar indicador de carga
+                    const registerBtn = document.querySelector('#registerFormElement button[type="submit"]');
+                    const originalText = registerBtn.innerHTML;
+                    registerBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Registrando...';
+                    registerBtn.disabled = true;
+
+                    const response = await window.dbConnector.register(formData);
+                    
+                    if (response.success) {
+                        this.showMessage('¡Registro exitoso! Puede iniciar sesión ahora', 'success');
+                        this.showLoginForm();
+                    } else {
+                        throw new Error(response.error || 'Error en el registro');
+                    }
+                } catch (error) {
+                    console.error('Error en registro:', error);
+                    this.showMessage(error.message || 'Error al registrar usuario', 'error');
+                } finally {
+                    // Restaurar botón
+                    const registerBtn = document.querySelector('#registerFormElement button[type="submit"]');
+                    registerBtn.innerHTML = originalText;
+                    registerBtn.disabled = false;
+                }
+            }
+
+            // Inicia sesión del usuario
+            loginUser(user) {
+                this.currentUser = user;
+                localStorage.setItem('tiendita_current_user', JSON.stringify(user));
+                
+                this.showMessage(`¡Bienvenido ${user.fullName}!`, 'success');
+                
+                setTimeout(() => {
+                    this.showMainSystem();
+                }, 1000);
+            }
+
+            // Cierra sesión del usuario
+            handleLogout() {
+                this.currentUser = null;
+                localStorage.removeItem('tiendita_current_user');
+                
+                // Limpiar formularios
+                document.getElementById('loginFormElement').reset();
+                document.getElementById('registerFormElement').reset();
+                
+                // Volver a pantalla de login
+                document.getElementById('mainSystem').classList.add('hidden');
+                document.getElementById('loginScreen').classList.remove('hidden');
+                
+                this.showMessage('Sesión cerrada correctamente', 'info');
+            }
+
+            // Verifica si hay una sesión activa
+            checkExistingSession() {
+                const savedUser = localStorage.getItem('tiendita_current_user');
+                if (savedUser) {
+                    this.currentUser = JSON.parse(savedUser);
+                    this.showMainSystem();
+                }
+            }
+
+            // Muestra el sistema principal
+            showMainSystem() {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainSystem').classList.remove('hidden', 'fade-in');
+                
+                // Actualizar información del usuario
+                document.getElementById('userWelcome').textContent = `Bienvenido, ${this.currentUser.fullName}`;
+                document.getElementById('userRole').textContent = this.currentUser.role === 'jefe' ? 'Administrador' : 'Empleado';
+                document.getElementById('storeInfo').textContent = this.currentUser.storeName;
+                
+                // Cargar interfaz según el rol
+                this.loadUserInterface();
+            }
+
+            // Carga la interfaz según el rol del usuario
+            loadUserInterface() {
+                if (this.currentUser.role === 'jefe') {
+                    this.loadJefeInterface();
+                } else {
+                    this.loadEmpleadoInterface();
+                }
+            }
+
+            // Carga la interfaz del jefe
+            loadJefeInterface() {
+                this.loadJefeSidebar();
+                this.loadJefeDashboard();
+                this.initializeJefeEventListeners();
+            }
+
+            // Carga la interfaz del empleado
+            loadEmpleadoInterface() {
+                this.loadEmpleadoSidebar();
+                this.loadEmpleadoDashboard();
+                this.initializeEmpleadoEventListeners();
+            }
+
+            // Carga el sidebar del empleado
+            loadEmpleadoSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.innerHTML = `
+                    <div class="p-4">
+                        <div class="text-center mb-6">
+                            <i class="fas fa-user-tie text-3xl text-green-400 mb-2"></i>
+                            <h3 class="font-bold text-lg">Panel de Empleado</h3>
+                            <p class="text-sm text-gray-300">${this.currentUser.storeName}</p>
+                        </div>
+                        
+                        <nav class="space-y-2">
+                            <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-700 transition duration-300 bg-gray-700" 
+                                    data-section="dashboard">
+                                <i class="fas fa-tachometer-alt mr-3"></i>Inicio
+                            </button>
+                            <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-700 transition duration-300" 
+                                    data-section="punto-venta">
+                                <i class="fas fa-cash-register mr-3"></i>Punto de Venta
+                            </button>
+                            <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-700 transition duration-300" 
+                                    data-section="consultar-productos">
+                                <i class="fas fa-search mr-3"></i>Consultar Productos
+                            </button>
+                            <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-700 transition duration-300" 
+                                    data-section="mis-ventas">
+                                <i class="fas fa-receipt mr-3"></i>Mis Ventas
+                            </button>
+                        </nav>
+                        
+                        <!-- Información del empleado -->
+                        <div class="mt-8 p-3 bg-gray-700 rounded-lg">
+                            <h4 class="text-sm font-semibold mb-2">Mi Información</h4>
+                            <p class="text-xs text-gray-300">${this.currentUser.fullName}</p>
+                            <p class="text-xs text-gray-400">${this.currentUser.email}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Carga el dashboard del empleado
+            loadEmpleadoDashboard() {
+                const mainContent = document.getElementById('mainContent');
+                const today = new Date().toLocaleDateString('es-ES');
+                
+                mainContent.innerHTML = `
+                    <!-- Dashboard del Empleado -->
+                    <div id="dashboardSection" class="role-empleado">
+                        <div class="mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                                <i class="fas fa-home mr-3 text-green-600"></i>Bienvenido, ${this.currentUser.fullName}
+                            </h2>
+                            <p class="text-gray-600">Resumen de tu jornada laboral - ${today}</p>
+                        </div>
+
+                        <!-- Tarjetas de Resumen del Empleado -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <div class="flex items-center">
+                                    <div class="bg-green-100 p-3 rounded-full">
+                                        <i class="fas fa-dollar-sign text-green-600 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-600">Ventas Hoy</p>
+                                        <p class="text-2xl font-bold text-gray-900">$1,240</p>
+                                        <p class="text-sm text-green-600">12 transacciones</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <div class="flex items-center">
+                                    <div class="bg-blue-100 p-3 rounded-full">
+                                        <i class="fas fa-clock text-blue-600 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-600">Horas Trabajadas</p>
+                                        <p class="text-2xl font-bold text-gray-900">6.5h</p>
+                                        <p class="text-sm text-blue-600">Desde 9:00 AM</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <div class="flex items-center">
+                                    <div class="bg-purple-100 p-3 rounded-full">
+                                        <i class="fas fa-star text-purple-600 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-600">Meta del Día</p>
+                                        <p class="text-2xl font-bold text-gray-900">83%</p>
+                                        <p class="text-sm text-purple-600">$1,500 objetivo</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Acceso Rápido -->
+                        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                            <h3 class="text-lg font-semibold mb-4">
+                                <i class="fas fa-bolt mr-2 text-green-600"></i>Acceso Rápido
+                            </h3>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <button class="quick-action-btn p-4 border-2 border-dashed border-green-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition duration-300" 
+                                        data-action="nueva-venta">
+                                    <i class="fas fa-plus-circle text-2xl text-green-600 mb-2"></i>
+                                    <p class="font-medium text-green-800">Nueva Venta</p>
+                                </button>
+                                <button class="quick-action-btn p-4 border-2 border-dashed border-blue-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition duration-300" 
+                                        data-action="buscar-producto">
+                                    <i class="fas fa-search text-2xl text-blue-600 mb-2"></i>
+                                    <p class="font-medium text-blue-800">Buscar Producto</p>
+                                </button>
+                                <button class="quick-action-btn p-4 border-2 border-dashed border-purple-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition duration-300" 
+                                        data-action="ver-ventas">
+                                    <i class="fas fa-receipt text-2xl text-purple-600 mb-2"></i>
+                                    <p class="font-medium text-purple-800">Ver Mis Ventas</p>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Últimas Ventas -->
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold mb-4">
+                                <i class="fas fa-history mr-2 text-gray-600"></i>Últimas Ventas
+                            </h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Hora</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Productos</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        <tr>
+                                            <td class="px-4 py-2 text-sm text-gray-900">15:42</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600">Coca Cola 600ml (2), Pan Bimbo (1)</td>
+                                            <td class="px-4 py-2 text-sm font-medium text-gray-900">$71.00</td>
+                                            <td class="px-4 py-2"><span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Completada</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-2 text-sm text-gray-900">15:28</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600">Leche Lala 1L (1), Sabritas (3)</td>
+                                            <td class="px-4 py-2 text-sm font-medium text-gray-900">$64.00</td>
+                                            <td class="px-4 py-2"><span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Completada</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-2 text-sm text-gray-900">15:15</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600">Fabuloso 1L (1)</td>
+                                            <td class="px-4 py-2 text-sm font-medium text-gray-900">$45.00</td>
+                                            <td class="px-4 py-2"><span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Completada</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Punto de Venta -->
+                    <div id="punto-ventaSection" class="role-empleado hidden">
+                        <div class="mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                                <i class="fas fa-cash-register mr-3 text-green-600"></i>Punto de Venta
+                            </h2>
+                            <p class="text-gray-600">Sistema de ventas para empleados</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Selección de Productos -->
+                            <div class="lg:col-span-2">
+                                <div class="bg-white p-6 rounded-lg shadow-md">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h3 class="text-lg font-semibold">Productos Disponibles</h3>
+                                        <input type="text" id="ventaProductSearch" placeholder="Buscar producto..." 
+                                               class="px-3 py-2 border rounded-lg focus:outline-none focus:border-green-500 w-64">
+                                    </div>
+                                    
+                                    <!-- Grid de Productos -->
+                                    <div id="productosVentaGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+                                        <!-- Los productos se cargarán aquí -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Carrito de Compras -->
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h3 class="text-lg font-semibold mb-4">
+                                    <i class="fas fa-shopping-cart mr-2 text-green-600"></i>Carrito de Compras
+                                </h3>
+                                
+                                <div id="carritoItems" class="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                                    <div class="text-center text-gray-500 py-8">
+                                        <i class="fas fa-shopping-cart text-3xl mb-2"></i>
+                                        <p>Selecciona productos para agregar al carrito</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="border-t pt-4">
+                                    <div class="flex justify-between mb-2">
+                                        <span class="font-medium">Subtotal:</span>
+                                        <span id="subtotalVenta">$0.00</span>
+                                    </div>
+                                    <div class="flex justify-between mb-4">
+                                        <span class="font-bold text-lg">Total:</span>
+                                        <span id="totalVenta" class="font-bold text-lg">$0.00</span>
+                                    </div>
+                                    
+                                    <button id="procesarVentaBtn" disabled 
+                                            class="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition duration-300">
+                                        <i class="fas fa-credit-card mr-2"></i>Procesar Venta
+                                    </button>
+                                    
+                                    <button id="limpiarCarritoBtn" 
+                                            class="w-full mt-2 border border-gray-300 py-2 px-4 rounded-lg hover:bg-gray-50 transition duration-300">
+                                        <i class="fas fa-trash mr-2"></i>Limpiar Carrito
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Consultar Productos -->
+                    <div id="consultar-productosSection" class="role-empleado hidden">
+                        <div class="mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                                <i class="fas fa-search mr-3 text-blue-600"></i>Consultar Productos
+                            </h2>
+                            <p class="text-gray-600">Busca información de productos y verifica disponibilidad</p>
+                        </div>
+
+                        <!-- Buscador -->
+                        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Buscar Producto</label>
+                                    <input type="text" id="consultaProductSearch" placeholder="Nombre o código..." 
+                                           class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+                                    <select id="consultaCategoryFilter" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                                        <option value="">Todas las categorías</option>
+                                        <option value="bebidas">Bebidas</option>
+                                        <option value="snacks">Snacks</option>
+                                        <option value="lacteos">Lácteos</option>
+                                        <option value="panaderia">Panadería</option>
+                                        <option value="limpieza">Limpieza</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-end">
+                                    <button id="buscarProductoBtn" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
+                                        <i class="fas fa-search mr-2"></i>Buscar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resultados de Búsqueda -->
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="consultaProductsTableBody" class="bg-white divide-y divide-gray-200">
+                                        <!-- Los productos se cargarán dinámicamente aquí -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mis Ventas -->
+                    <div id="mis-ventasSection" class="role-empleado hidden">
+                        <div class="mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                                <i class="fas fa-receipt mr-3 text-purple-600"></i>Mis Ventas
+                            </h2>
+                            <p class="text-gray-600">Historial de ventas realizadas</p>
+                        </div>
+
+                        <!-- Filtros de Fecha -->
+                        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Inicio</label>
+                                    <input type="date" id="fechaInicio" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Fin</label>
+                                    <input type="date" id="fechaFin" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+                                    <select id="estadoVentaFilter" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500">
+                                        <option value="">Todos</option>
+                                        <option value="completada">Completadas</option>
+                                        <option value="cancelada">Canceladas</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-end">
+                                    <button id="filtrarVentasBtn" class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-300">
+                                        <i class="fas fa-filter mr-2"></i>Filtrar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de Ventas -->
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha/Hora</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Productos</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="misVentasTableBody" class="bg-white divide-y divide-gray-200">
+                                        <!-- Las ventas se cargarán dinámicamente aquí -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal de Confirmación de Venta -->
+                    <div id="confirmVentaModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+                        <div class="flex items-center justify-center min-h-screen p-4">
+                            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                                <div class="px-6 py-4 border-b border-gray-200">
+                                    <h3 class="text-lg font-semibold text-gray-900">Confirmar Venta</h3>
+                                </div>
+                                <div class="p-6">
+                                    <div class="mb-4">
+                                        <p class="text-gray-600 mb-4">¿Confirma que desea procesar esta venta?</p>
+                                        <div id="resumenVenta" class="bg-gray-50 p-4 rounded-lg">
+                                            <!-- El resumen se llenará dinámicamente -->
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-end space-x-3">
+                                        <button id="cancelarVentaBtn" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-300">
+                                            Cancelar
+                                        </button>
+                                        <button id="confirmarVentaBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-300">
+                                            <i class="fas fa-check mr-2"></i>Confirmar Venta
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Cargar datos iniciales del empleado
+                this.loadEmpleadoData();
+            }
+
+            // Inicializa los event listeners del empleado
+            initializeEmpleadoEventListeners() {
+                // Navegación del sidebar
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.handleEmpleadoNavigation(e.target.dataset.section);
+                    });
+                });
+
+                // Acciones rápidas
+                document.querySelectorAll('.quick-action-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.handleEmpleadoQuickAction(e.currentTarget.dataset.action);
+                    });
+                });
+
+                // Punto de venta
+                document.getElementById('ventaProductSearch').addEventListener('input', () => {
+                    this.filterVentaProducts();
+                });
+
+                document.getElementById('procesarVentaBtn').addEventListener('click', () => {
+                    this.showConfirmVentaModal();
+                });
+
+                document.getElementById('limpiarCarritoBtn').addEventListener('click', () => {
+                    this.limpiarCarrito();
+                });
+
+                // Modal de venta
+                document.getElementById('cancelarVentaBtn').addEventListener('click', () => {
+                    this.hideConfirmVentaModal();
+                });
+
+                document.getElementById('confirmarVentaBtn').addEventListener('click', () => {
+                    this.procesarVenta();
+                });
+
+                // Consulta de productos
+                document.getElementById('buscarProductoBtn').addEventListener('click', () => {
+                    this.buscarProductosEmpleado();
+                });
+
+                // Filtros de ventas
+                document.getElementById('filtrarVentasBtn').addEventListener('click', () => {
+                    this.filtrarMisVentas();
+                });
+            }
+
+            // Carga datos iniciales del empleado
+            loadEmpleadoData() {
+                this.carritoVenta = [];
+                this.totalVenta = 0;
+                this.loadProductosVenta();
+                this.loadConsultaProductos();
+                this.loadMisVentas();
+            }
+
+            // Carga productos para la venta
+            loadProductosVenta() {
+                const productos = this.getProductosDisponibles();
+                const grid = document.getElementById('productosVentaGrid');
+                
+                grid.innerHTML = productos.map(producto => `
+                    <div class="product-card border rounded-lg p-3 hover:shadow-md transition duration-300 cursor-pointer ${producto.stock === 0 ? 'opacity-50' : ''}" 
+                         onclick="window.authSystem.agregarAlCarrito(${producto.id})" ${producto.stock === 0 ? 'style="pointer-events: none;"' : ''}>
+                        <div class="text-center">
+                            <div class="bg-gray-100 rounded-lg p-4 mb-2">
+                                <i class="fas fa-box text-2xl text-gray-600"></i>
+                            </div>
+                            <h4 class="font-medium text-sm mb-1">${producto.name}</h4>
+                            <p class="text-xs text-gray-500 mb-2">${producto.brand || 'Sin marca'}</p>
+                            <p class="font-bold text-green-600">$${producto.sellPrice.toFixed(2)}</p>
+                            <p class="text-xs ${producto.stock <= producto.minStock ? 'text-red-600' : 'text-gray-500'}">
+                                Stock: ${producto.stock}
+                            </p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Obtiene productos disponibles (solo los que tienen stock)
+            getProductosDisponibles() {
+                return [
+                    { id: 1, name: 'Coca Cola 600ml', code: 'CC600', category: 'bebidas', brand: 'Coca Cola', sellPrice: 18.00, stock: 3, minStock: 10 },
+                    { id: 2, name: 'Pan Bimbo Grande', code: 'PB001', category: 'panaderia', brand: 'Bimbo', sellPrice: 35.00, stock: 8, minStock: 5 },
+                    { id: 3, name: 'Leche Lala 1L', code: 'LL1000', category: 'lacteos', brand: 'Lala', sellPrice: 28.00, stock: 15, minStock: 8 },
+                    { id: 4, name: 'Sabritas Original 45g', code: 'SAB45', category: 'snacks', brand: 'Sabritas', sellPrice: 12.00, stock: 25, minStock: 10 },
+                    { id: 5, name: 'Fabuloso 1L', code: 'FAB1000', category: 'limpieza', brand: 'Fabuloso', sellPrice: 45.00, stock: 0, minStock: 3 }
+                ];
+            }
+
+            // Maneja la navegación del empleado
+            handleEmpleadoNavigation(section) {
+                // Remover clase activa de todos los botones
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.classList.remove('bg-gray-700');
+                });
+
+                // Agregar clase activa al botón seleccionado
+                document.querySelector(`[data-section="${section}"]`).classList.add('bg-gray-700');
+
+                // Ocultar todas las secciones
+                document.querySelectorAll('[id$="Section"]').forEach(section => {
+                    section.classList.add('hidden');
+                });
+
+                // Mostrar la sección seleccionada
+                const targetSection = document.getElementById(`${section}Section`);
+                if (targetSection) {
+                    targetSection.classList.remove('hidden');
+                }
+
+                console.log(`Empleado navegando a: ${section}`);
+            }
+
+            // Maneja las acciones rápidas del empleado
+            handleEmpleadoQuickAction(action) {
+                switch(action) {
+                    case 'nueva-venta':
+                        this.handleEmpleadoNavigation('punto-venta');
+                        break;
+                    case 'buscar-producto':
+                        this.handleEmpleadoNavigation('consultar-productos');
+                        break;
+                    case 'ver-ventas':
+                        this.handleEmpleadoNavigation('mis-ventas');
+                        break;
+                }
+            }
+
+            // Agrega producto al carrito
+            agregarAlCarrito(productId) {
+                const productos = this.getProductosDisponibles();
+                const producto = productos.find(p => p.id === productId);
+                
+                if (!producto || producto.stock === 0) {
+                    this.showMessage('Producto no disponible', 'error');
+                    return;
+                }
+
+                // Buscar si el producto ya está en el carrito
+                const itemExistente = this.carritoVenta.find(item => item.id === productId);
+                
+                if (itemExistente) {
+                    if (itemExistente.cantidad < producto.stock) {
+                        itemExistente.cantidad++;
+                        itemExistente.subtotal = itemExistente.cantidad * itemExistente.precio;
+                    } else {
+                        this.showMessage('No hay suficiente stock disponible', 'warning');
+                        return;
+                    }
+                } else {
+                    this.carritoVenta.push({
+                        id: productId,
+                        nombre: producto.name,
+                        precio: producto.sellPrice,
+                        cantidad: 1,
+                        subtotal: producto.sellPrice,
+                        stockDisponible: producto.stock
+                    });
+                }
+
+                this.actualizarCarrito();
+                this.showMessage(`${producto.name} agregado al carrito`, 'success');
+            }
+
+            // Actualiza el carrito de compras
+            actualizarCarrito() {
+                const carritoItems = document.getElementById('carritoItems');
+                const subtotalElement = document.getElementById('subtotalVenta');
+                const totalElement = document.getElementById('totalVenta');
+                const procesarBtn = document.getElementById('procesarVentaBtn');
+
+                if (this.carritoVenta.length === 0) {
+                    carritoItems.innerHTML = `
+                        <div class="text-center text-gray-500 py-8">
+                            <i class="fas fa-shopping-cart text-3xl mb-2"></i>
+                            <p>Selecciona productos para agregar al carrito</p>
+                        </div>
+                    `;
+                    this.totalVenta = 0;
+                    procesarBtn.disabled = true;
+                } else {
+                    carritoItems.innerHTML = this.carritoVenta.map((item, index) => `
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <div class="flex-1">
+                                <p class="font-medium text-sm">${item.nombre}</p>
+                                <p class="text-xs text-gray-600">$${item.precio.toFixed(2)} c/u</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="window.authSystem.cambiarCantidadCarrito(${index}, -1)" 
+                                        class="w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600">-</button>
+                                <span class="text-sm font-medium">${item.cantidad}</span>
+                                <button onclick="window.authSystem.cambiarCantidadCarrito(${index}, 1)" 
+                                        class="w-6 h-6 bg-green-500 text-white rounded-full text-xs hover:bg-green-600">+</button>
+                            </div>
+                            <div class="text-right ml-4">
+                                <p class="font-medium">$${item.subtotal.toFixed(2)}</p>
+                                <button onclick="window.authSystem.removerDelCarrito(${index})" 
+                                        class="text-red-500 hover:text-red-700 text-xs">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    this.totalVenta = this.carritoVenta.reduce((total, item) => total + item.subtotal, 0);
+                    procesarBtn.disabled = false;
+                }
+
+                subtotalElement.textContent = `$${this.totalVenta.toFixed(2)}`;
+                totalElement.textContent = `$${this.totalVenta.toFixed(2)}`;
+            }
+
+            // Cambia la cantidad de un producto en el carrito
+            cambiarCantidadCarrito(index, cambio) {
+                const item = this.carritoVenta[index];
+                const nuevaCantidad = item.cantidad + cambio;
+
+                if (nuevaCantidad <= 0) {
+                    this.removerDelCarrito(index);
+                    return;
+                }
+
+                if (nuevaCantidad > item.stockDisponible) {
+                    this.showMessage('No hay suficiente stock disponible', 'warning');
+                    return;
+                }
+
+                item.cantidad = nuevaCantidad;
+                item.subtotal = item.cantidad * item.precio;
+                this.actualizarCarrito();
+            }
+
+            // Remueve un producto del carrito
+            removerDelCarrito(index) {
+                this.carritoVenta.splice(index, 1);
+                this.actualizarCarrito();
+            }
+
+            // Limpia el carrito
+            limpiarCarrito() {
+                this.carritoVenta = [];
+                this.actualizarCarrito();
+                this.showMessage('Carrito limpiado', 'info');
+            }
+
+            // Muestra modal de confirmación de venta
+            showConfirmVentaModal() {
+                const modal = document.getElementById('confirmVentaModal');
+                const resumen = document.getElementById('resumenVenta');
+
+                const resumenHTML = `
+                    <div class="space-y-2">
+                        ${this.carritoVenta.map(item => `
+                            <div class="flex justify-between">
+                                <span>${item.nombre} x${item.cantidad}</span>
+                                <span>$${item.subtotal.toFixed(2)}</span>
+                            </div>
+                        `).join('')}
+                        <div class="border-t pt-2 mt-2">
+                            <div class="flex justify-between font-bold">
+                                <span>Total:</span>
+                                <span>$${this.totalVenta.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                resumen.innerHTML = resumenHTML;
+                modal.classList.remove('hidden');
+            }
+
+            // Oculta modal de confirmación de venta
+            hideConfirmVentaModal() {
+                document.getElementById('confirmVentaModal').classList.add('hidden');
+            }
+
+            // Procesa la venta
+            procesarVenta() {
+                // Simular procesamiento de venta
+                const ventaId = Date.now();
+                const timestamp = new Date().toLocaleString('es-ES');
+
+                // Agregar venta al historial (simulado)
+                const venta = {
+                    id: ventaId,
+                    fecha: timestamp,
+                    items: [...this.carritoVenta],
+                    total: this.totalVenta,
+                    empleado: this.currentUser.fullName,
+                    estado: 'completada'
+                };
+
+                // Simular guardado en localStorage
+                const ventas = JSON.parse(localStorage.getItem('tiendita_ventas') || '[]');
+                ventas.push(venta);
+                localStorage.setItem('tiendita_ventas', JSON.stringify(ventas));
+
+                this.showMessage(`Venta procesada exitosamente. ID: ${ventaId}`, 'success');
+                this.hideConfirmVentaModal();
+                this.limpiarCarrito();
+                this.loadMisVentas(); // Actualizar historial
+            }
+
+            // Filtra productos en punto de venta
+            filterVentaProducts() {
+                const searchTerm = document.getElementById('ventaProductSearch').value.toLowerCase();
+                const productCards = document.querySelectorAll('.product-card');
+
+                productCards.forEach(card => {
+                    const productName = card.querySelector('h4').textContent.toLowerCase();
+                    if (productName.includes(searchTerm)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+
+            // Carga productos para consulta
+            loadConsultaProductos() {
+                const productos = this.getProductosDisponibles();
+                this.renderConsultaProductsTable(productos);
+            }
+
+            // Busca productos (empleado)
+            buscarProductosEmpleado() {
+                const searchTerm = document.getElementById('consultaProductSearch').value.toLowerCase();
+                const category = document.getElementById('consultaCategoryFilter').value;
+                
+                const productos = this.getProductosDisponibles().filter(producto => {
+                    const matchesSearch = !searchTerm || 
+                        producto.name.toLowerCase().includes(searchTerm) ||
+                        producto.code.toLowerCase().includes(searchTerm);
+                    
+                    const matchesCategory = !category || producto.category === category;
+                    
+                    return matchesSearch && matchesCategory;
+                });
+
+                this.renderConsultaProductsTable(productos);
+            }
+
+            // Renderiza tabla de consulta de productos
+            renderConsultaProductsTable(productos) {
+                const tbody = document.getElementById('consultaProductsTableBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = productos.map(producto => {
+                    const stockStatus = producto.stock === 0 ? 'agotado' : 
+                                       producto.stock <= producto.minStock ? 'bajo' : 'disponible';
+                    
+                    const stockClass = stockStatus === 'agotado' ? 'bg-red-100 text-red-800' :
+                                      stockStatus === 'bajo' ? 'bg-yellow-100 text-yellow-800' :
+                                      'bg-green-100 text-green-800';
+
+                    return `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">${producto.name}</div>
+                                    <div class="text-sm text-gray-500">${producto.brand || 'Sin marca'}</div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${producto.code}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    ${producto.category}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${producto.sellPrice.toFixed(2)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${producto.stock} uds</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${stockClass}">
+                                    ${stockStatus === 'agotado' ? 'Agotado' : 
+                                      stockStatus === 'bajo' ? 'Stock Bajo' : 'Disponible'}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // Carga historial de ventas del empleado
+            loadMisVentas() {
+                const ventas = JSON.parse(localStorage.getItem('tiendita_ventas') || '[]');
+                const misVentas = ventas.filter(venta => venta.empleado === this.currentUser.fullName);
+                this.renderMisVentasTable(misVentas);
+            }
+
+            // Filtra mis ventas
+            filtrarMisVentas() {
+                const fechaInicio = document.getElementById('fechaInicio').value;
+                const fechaFin = document.getElementById('fechaFin').value;
+                const estado = document.getElementById('estadoVentaFilter').value;
+
+                let ventas = JSON.parse(localStorage.getItem('tiendita_ventas') || '[]');
+                ventas = ventas.filter(venta => venta.empleado === this.currentUser.fullName);
+
+                if (fechaInicio) {
+                    ventas = ventas.filter(venta => {
+                        const fechaVenta = new Date(venta.fecha).toISOString().split('T')[0];
+                        return fechaVenta >= fechaInicio;
+                    });
+                }
+
+                if (fechaFin) {
+                    ventas = ventas.filter(venta => {
+                        const fechaVenta = new Date(venta.fecha).toISOString().split('T')[0];
+                        return fechaVenta <= fechaFin;
+                    });
+                }
+
+                if (estado) {
+                    ventas = ventas.filter(venta => venta.estado === estado);
+                }
+
+                this.renderMisVentasTable(ventas);
+            }
+
+            // Renderiza tabla de mis ventas
+            renderMisVentasTable(ventas) {
+                const tbody = document.getElementById('misVentasTableBody');
+                if (!tbody) return;
+
+                if (ventas.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                <i class="fas fa-receipt text-3xl mb-2"></i>
+                                <p>No se encontraron ventas</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = ventas.map(venta => {
+                    const productosTexto = venta.items.map(item => `${item.nombre} (${item.cantidad})`).join(', ');
+                    const totalCantidad = venta.items.reduce((total, item) => total + item.cantidad, 0);
+
+                    return `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                ${new Date(venta.fecha).toLocaleString('es-ES')}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate" title="${productosTexto}">
+                                ${productosTexto}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${totalCantidad} items</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">$${venta.total.toFixed(2)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                    venta.estado === 'completada' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                }">
+                                    ${venta.estado === 'completada' ? 'Completada' : 'Cancelada'}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // Carga el sidebar del jefe
+            loadJefeSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.innerHTML = `
+                    <div class="p-4">
+                        <div class="text-center mb-6">
+                            <i class="fas fa-crown text-3xl text-yellow-400 mb-2"></i>
+                            <h3 class="font-bold text-lg">Panel de Administrador</h3>
+                            <p class="text-sm text-gray-300">${this.currentUser.storeName}</p>
+                        </div>
+                        
+                        <nav class="space-y-2">
+                            <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-700 transition duration-300 bg-gray-700" 
+                                    data-section="dashboard">
+                                <i class="fas fa-tachometer-alt mr-3"></i>Dashboard
+                            </button>
+                            <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-700 transition duration-300" 
+                                    data-section="productos">
+                                <i class="fas fa-box mr-3"></i>Productos
+                            </button>
+                            <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-700 transition duration-300" 
+                                    data-section="inventario">
+                                <i class="fas fa-warehouse mr-3"></i>Inventario
+                            </button>
+                            <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-700 transition duration-300" 
+                                    data-section="proveedores">
+                                <i class="fas fa-truck mr-3"></i>Proveedores
+                            </button>
+                            <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-700 transition duration-300" 
+                                    data-section="pedidos">
+                                <i class="fas fa-shopping-cart mr-3"></i>Pedidos
+                            </button>
+                            <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-700 transition duration-300" 
+                                    data-section="ventas">
+                                <i class="fas fa-cash-register mr-3"></i>Ventas
+                            </button>
+                            <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-700 transition duration-300" 
+                                    data-section="empleados">
+                                <i class="fas fa-users mr-3"></i>Empleados
+                            </button>
+                            <button class="nav-btn w-full text-left px-4 py-3 rounded-lg hover:bg-gray-700 transition duration-300" 
+                                    data-section="reportes">
+                                <i class="fas fa-chart-bar mr-3"></i>Reportes
+                            </button>
+                        </nav>
+                    </div>
+                `;
+            }
+
+            // Carga el dashboard del jefe
+            loadJefeDashboard() {
+                const mainContent = document.getElementById('mainContent');
+                const today = new Date().toLocaleDateString('es-ES');
+                
+                mainContent.innerHTML = `
+                    <!-- Dashboard Principal del Jefe -->
+                    <div id="dashboardSection" class="role-jefe">
+                        <div class="mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                                <i class="fas fa-tachometer-alt mr-3 text-blue-600"></i>Dashboard - Panel de Control
+                            </h2>
+                            <p class="text-gray-600">Resumen ejecutivo de tu tienda al ${today}</p>
+                        </div>
+
+                        <!-- Tarjetas de Resumen -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <div class="flex items-center">
+                                    <div class="bg-blue-100 p-3 rounded-full">
+                                        <i class="fas fa-dollar-sign text-blue-600 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-600">Ventas Hoy</p>
+                                        <p class="text-2xl font-bold text-gray-900">$2,543</p>
+                                        <p class="text-sm text-green-600">+12% vs ayer</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <div class="flex items-center">
+                                    <div class="bg-green-100 p-3 rounded-full">
+                                        <i class="fas fa-box text-green-600 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-600">Productos</p>
+                                        <p class="text-2xl font-bold text-gray-900">248</p>
+                                        <p class="text-sm text-gray-500">En inventario</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <div class="flex items-center">
+                                    <div class="bg-yellow-100 p-3 rounded-full">
+                                        <i class="fas fa-exclamation-triangle text-yellow-600 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-600">Stock Bajo</p>
+                                        <p class="text-2xl font-bold text-gray-900">12</p>
+                                        <p class="text-sm text-red-600">Requieren atención</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <div class="flex items-center">
+                                    <div class="bg-purple-100 p-3 rounded-full">
+                                        <i class="fas fa-users text-purple-600 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-600">Empleados</p>
+                                        <p class="text-2xl font-bold text-gray-900">3</p>
+                                        <p class="text-sm text-gray-500">Activos</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gráficos y Alertas -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                            <!-- Ventas Recientes -->
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h3 class="text-lg font-semibold mb-4">
+                                    <i class="fas fa-chart-line mr-2 text-blue-600"></i>Ventas de la Semana
+                                </h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600">Lunes</span>
+                                        <div class="flex items-center">
+                                            <div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
+                                                <div class="bg-blue-600 h-2 rounded-full" style="width: 85%"></div>
+                                            </div>
+                                            <span class="text-sm font-medium">$2,180</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600">Martes</span>
+                                        <div class="flex items-center">
+                                            <div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
+                                                <div class="bg-blue-600 h-2 rounded-full" style="width: 92%"></div>
+                                            </div>
+                                            <span class="text-sm font-medium">$2,543</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600">Miércoles</span>
+                                        <div class="flex items-center">
+                                            <div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
+                                                <div class="bg-blue-600 h-2 rounded-full" style="width: 78%"></div>
+                                            </div>
+                                            <span class="text-sm font-medium">$1,960</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Alertas de Stock -->
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h3 class="text-lg font-semibold mb-4">
+                                    <i class="fas fa-bell mr-2 text-red-600"></i>Alertas de Inventario
+                                </h3>
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-exclamation-circle text-red-600 mr-3"></i>
+                                            <div>
+                                                <p class="font-medium text-red-800">Coca Cola 600ml</p>
+                                                <p class="text-sm text-red-600">Solo 3 unidades</p>
+                                            </div>
+                                        </div>
+                                        <button class="text-red-600 hover:text-red-800">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-exclamation-triangle text-yellow-600 mr-3"></i>
+                                            <div>
+                                                <p class="font-medium text-yellow-800">Pan Bimbo Grande</p>
+                                                <p class="text-sm text-yellow-600">8 unidades restantes</p>
+                                            </div>
+                                        </div>
+                                        <button class="text-yellow-600 hover:text-yellow-800">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Acciones Rápidas -->
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold mb-4">
+                                <i class="fas fa-bolt mr-2 text-blue-600"></i>Acciones Rápidas
+                            </h3>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <button class="quick-action-btn p-4 border-2 border-dashed border-blue-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition duration-300" 
+                                        data-action="nueva-venta">
+                                    <i class="fas fa-plus-circle text-2xl text-blue-600 mb-2"></i>
+                                    <p class="font-medium text-blue-800">Nueva Venta</p>
+                                </button>
+                                <button class="quick-action-btn p-4 border-2 border-dashed border-green-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition duration-300" 
+                                        data-action="agregar-producto">
+                                    <i class="fas fa-box-open text-2xl text-green-600 mb-2"></i>
+                                    <p class="font-medium text-green-800">Agregar Producto</p>
+                                </button>
+                                <button class="quick-action-btn p-4 border-2 border-dashed border-purple-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition duration-300" 
+                                        data-action="nuevo-pedido">
+                                    <i class="fas fa-truck text-2xl text-purple-600 mb-2"></i>
+                                    <p class="font-medium text-purple-800">Nuevo Pedido</p>
+                                </button>
+                                <button class="quick-action-btn p-4 border-2 border-dashed border-orange-300 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition duration-300" 
+                                        data-action="ver-reportes">
+                                    <i class="fas fa-chart-pie text-2xl text-orange-600 mb-2"></i>
+                                    <p class="font-medium text-orange-800">Ver Reportes</p>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Productos (oculta inicialmente) -->
+                    <div id="productosSection" class="role-jefe hidden">
+                        <div class="mb-6 flex justify-between items-center">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                                    <i class="fas fa-box mr-3 text-blue-600"></i>Gestión de Productos
+                                </h2>
+                                <p class="text-gray-600">Administra el catálogo de productos de tu tienda</p>
+                            </div>
+                            <button id="addProductBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300" 
+                                    data-api-endpoint="/api/products">
+                                <i class="fas fa-plus mr-2"></i>Agregar Producto
+                            </button>
+                        </div>
+
+                        <!-- Filtros y Búsqueda -->
+                        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Buscar Producto</label>
+                                    <input type="text" id="productSearch" placeholder="Nombre o código..." 
+                                           class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+                                    <select id="categoryFilter" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                                        <option value="">Todas las categorías</option>
+                                        <option value="bebidas">Bebidas</option>
+                                        <option value="snacks">Snacks</option>
+                                        <option value="lacteos">Lácteos</option>
+                                        <option value="panaderia">Panadería</option>
+                                        <option value="limpieza">Limpieza</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Stock</label>
+                                    <select id="stockFilter" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                                        <option value="">Todos</option>
+                                        <option value="bajo">Stock Bajo</option>
+                                        <option value="disponible">Disponible</option>
+                                        <option value="agotado">Agotado</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-end">
+                                    <button id="clearFilters" class="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-300">
+                                        <i class="fas fa-times mr-2"></i>Limpiar Filtros
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de Productos -->
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="productsTableBody" class="bg-white divide-y divide-gray-200">
+                                        <!-- Los productos se cargarán dinámicamente aquí -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal para Agregar/Editar Producto -->
+                    <div id="productModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+                        <div class="flex items-center justify-center min-h-screen p-4">
+                            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
+                                <div class="px-6 py-4 border-b border-gray-200">
+                                    <h3 id="productModalTitle" class="text-lg font-semibold text-gray-900">Agregar Producto</h3>
+                                </div>
+                                <form id="productForm" class="p-6" data-api-endpoint="/api/products">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Producto *</label>
+                                            <input type="text" id="productName" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                                                   data-field="name">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Código/SKU *</label>
+                                            <input type="text" id="productCode" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                                                   data-field="code">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Categoría *</label>
+                                            <select id="productCategory" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                                                    data-field="category">
+                                                <option value="">Seleccionar categoría</option>
+                                                <option value="bebidas">Bebidas</option>
+                                                <option value="snacks">Snacks</option>
+                                                <option value="lacteos">Lácteos</option>
+                                                <option value="panaderia">Panadería</option>
+                                                <option value="limpieza">Limpieza</option>
+                                                <option value="otros">Otros</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Marca</label>
+                                            <input type="text" id="productBrand" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                                                   data-field="brand">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Precio de Compra *</label>
+                                            <input type="number" id="productBuyPrice" step="0.01" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                                                   data-field="buyPrice">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Precio de Venta *</label>
+                                            <input type="number" id="productSellPrice" step="0.01" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                                                   data-field="sellPrice">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Stock Inicial *</label>
+                                            <input type="number" id="productStock" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                                                   data-field="stock">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Stock Mínimo</label>
+                                            <input type="number" id="productMinStock" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                                                   data-field="minStock">
+                                        </div>
+                                    </div>
+                                    <div class="mt-6">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                                        <textarea id="productDescription" rows="3" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" 
+                                                  data-field="description"></textarea>
+                                    </div>
+                                    <div class="mt-6 flex justify-end space-x-3">
+                                        <button type="button" id="cancelProductBtn" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-300">
+                                            Cancelar
+                                        </button>
+                                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
+                                            <i class="fas fa-save mr-2"></i>Guardar Producto
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Empleados -->
+                    <div id="empleadosSection" class="role-jefe hidden">
+                        <div class="mb-6 flex justify-between items-center">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                                    <i class="fas fa-users mr-3 text-purple-600"></i>Gestión de Empleados
+                                </h2>
+                                <p class="text-gray-600">Administra el personal de tu tienda</p>
+                            </div>
+                            <button id="addEmployeeBtn" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition duration-300" 
+                                    data-api-endpoint="/api/employees">
+                                <i class="fas fa-user-plus mr-2"></i>Agregar Empleado
+                            </button>
+                        </div>
+
+                        <!-- Lista de Empleados -->
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Empleado</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Ingreso</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="employeesTableBody" class="bg-white divide-y divide-gray-200">
+                                        <!-- Los empleados se cargarán dinámicamente aquí -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal para Agregar/Editar Empleado -->
+                    <div id="employeeModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+                        <div class="flex items-center justify-center min-h-screen p-4">
+                            <div class="bg-white rounded-lg shadow-xl max-w-lg w-full">
+                                <div class="px-6 py-4 border-b border-gray-200">
+                                    <h3 id="employeeModalTitle" class="text-lg font-semibold text-gray-900">Agregar Empleado</h3>
+                                </div>
+                                <form id="employeeForm" class="p-6" data-api-endpoint="/api/employees">
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre Completo *</label>
+                                            <input type="text" id="employeeName" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500" 
+                                                   data-field="fullName">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Usuario *</label>
+                                            <input type="text" id="employeeUsername" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500" 
+                                                   data-field="username">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                                            <input type="email" id="employeeEmail" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500" 
+                                                   data-field="email">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña Temporal *</label>
+                                            <input type="password" id="employeePassword" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500" 
+                                                   data-field="password">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                                            <input type="tel" id="employeePhone" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500" 
+                                                   data-field="phone">
+                                        </div>
+                                    </div>
+                                    <div class="mt-6 flex justify-end space-x-3">
+                                        <button type="button" id="cancelEmployeeBtn" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-300">
+                                            Cancelar
+                                        </button>
+                                        <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-300">
+                                            <i class="fas fa-save mr-2"></i>Guardar Empleado
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Proveedores -->
+                    <div id="proveedoresSection" class="role-jefe hidden">
+                        <div class="mb-6 flex justify-between items-center">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                                    <i class="fas fa-truck mr-3 text-orange-600"></i>Gestión de Proveedores
+                                </h2>
+                                <p class="text-gray-600">Administra tus proveedores y contactos</p>
+                            </div>
+                            <button id="addSupplierBtn" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition duration-300" 
+                                    data-api-endpoint="/api/suppliers">
+                                <i class="fas fa-plus mr-2"></i>Agregar Proveedor
+                            </button>
+                        </div>
+
+                        <!-- Lista de Proveedores -->
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Empresa</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contacto</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Productos</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="suppliersTableBody" class="bg-white divide-y divide-gray-200">
+                                        <!-- Los proveedores se cargarán dinámicamente aquí -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal para Agregar/Editar Proveedor -->
+                    <div id="supplierModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+                        <div class="flex items-center justify-center min-h-screen p-4">
+                            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full">
+                                <div class="px-6 py-4 border-b border-gray-200">
+                                    <h3 id="supplierModalTitle" class="text-lg font-semibold text-gray-900">Agregar Proveedor</h3>
+                                </div>
+                                <form id="supplierForm" class="p-6" data-api-endpoint="/api/suppliers">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre de la Empresa *</label>
+                                            <input type="text" id="supplierCompany" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-orange-500" 
+                                                   data-field="company">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Persona de Contacto *</label>
+                                            <input type="text" id="supplierContact" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-orange-500" 
+                                                   data-field="contactPerson">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono *</label>
+                                            <input type="tel" id="supplierPhone" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-orange-500" 
+                                                   data-field="phone">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                                            <input type="email" id="supplierEmail" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-orange-500" 
+                                                   data-field="email">
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
+                                            <textarea id="supplierAddress" rows="2" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-orange-500" 
+                                                      data-field="address"></textarea>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Productos que Suministra</label>
+                                            <input type="text" id="supplierProducts" placeholder="Ej: Bebidas, Snacks, Lácteos" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-orange-500" 
+                                                   data-field="products">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Días de Entrega</label>
+                                            <input type="text" id="supplierDeliveryDays" placeholder="Ej: Lunes, Miércoles, Viernes" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-orange-500" 
+                                                   data-field="deliveryDays">
+                                        </div>
+                                    </div>
+                                    <div class="mt-6">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Notas Adicionales</label>
+                                        <textarea id="supplierNotes" rows="3" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-orange-500" 
+                                                  data-field="notes"></textarea>
+                                    </div>
+                                    <div class="mt-6 flex justify-end space-x-3">
+                                        <button type="button" id="cancelSupplierBtn" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-300">
+                                            Cancelar
+                                        </button>
+                                        <button type="submit" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition duration-300">
+                                            <i class="fas fa-save mr-2"></i>Guardar Proveedor
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Reportes -->
+                    <div id="reportesSection" class="role-jefe hidden">
+                        <div class="mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                                <i class="fas fa-chart-bar mr-3 text-indigo-600"></i>Reportes y Análisis
+                            </h2>
+                            <p class="text-gray-600">Análisis detallado del rendimiento de tu tienda</p>
+                        </div>
+
+                        <!-- Filtros de Fechas -->
+                        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Desde</label>
+                                    <input type="date" id="reportStartDate" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Hasta</label>
+                                    <input type="date" id="reportEndDate" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Reporte</label>
+                                    <select id="reportType" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500">
+                                        <option value="ventas">Ventas</option>
+                                        <option value="productos">Productos</option>
+                                        <option value="empleados">Empleados</option>
+                                        <option value="inventario">Inventario</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <button id="generateReportBtn" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300">
+                                        <i class="fas fa-chart-line mr-2"></i>Generar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resumen de Métricas -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <div class="flex items-center">
+                                    <div class="bg-green-100 p-3 rounded-full">
+                                        <i class="fas fa-dollar-sign text-green-600 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm text-gray-600">Ventas Totales</p>
+                                        <p id="totalSalesReport" class="text-2xl font-bold text-gray-900">$0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <div class="flex items-center">
+                                    <div class="bg-blue-100 p-3 rounded-full">
+                                        <i class="fas fa-shopping-cart text-blue-600 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm text-gray-600">Transacciones</p>
+                                        <p id="totalTransactionsReport" class="text-2xl font-bold text-gray-900">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <div class="flex items-center">
+                                    <div class="bg-purple-100 p-3 rounded-full">
+                                        <i class="fas fa-box text-purple-600 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm text-gray-600">Productos Vendidos</p>
+                                        <p id="totalProductsSoldReport" class="text-2xl font-bold text-gray-900">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <div class="flex items-center">
+                                    <div class="bg-yellow-100 p-3 rounded-full">
+                                        <i class="fas fa-chart-line text-yellow-600 text-xl"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm text-gray-600">Promedio por Venta</p>
+                                        <p id="averageSaleReport" class="text-2xl font-bold text-gray-900">$0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gráficos y Tablas -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Productos Más Vendidos -->
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h3 class="text-lg font-semibold mb-4">
+                                    <i class="fas fa-trophy mr-2 text-yellow-600"></i>Productos Más Vendidos
+                                </h3>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Producto</th>
+                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Cantidad</th>
+                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="topProductsTableBody" class="divide-y divide-gray-200">
+                                            <!-- Se cargará dinámicamente -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Ventas por Empleado -->
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h3 class="text-lg font-semibold mb-4">
+                                    <i class="fas fa-users mr-2 text-blue-600"></i>Rendimiento por Empleado
+                                </h3>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Empleado</th>
+                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ventas</th>
+                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="employeePerformanceTableBody" class="divide-y divide-gray-200">
+                                            <!-- Se cargará dinámicamente -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Exportar Reportes -->
+                        <div class="mt-6 text-right">
+                            <button id="exportReportBtn" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300">
+                                <i class="fas fa-download mr-2"></i>Exportar Reporte
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Cargar productos simulados
+                this.loadSimulatedProducts();
+            }
+
+            // Inicializa los event listeners específicos del jefe
+            initializeJefeEventListeners() {
+                // Navegación del sidebar
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.handleJefeNavigation(e.target.dataset.section);
+                    });
+                });
+
+                // Acciones rápidas del dashboard
+                document.querySelectorAll('.quick-action-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.handleQuickAction(e.currentTarget.dataset.action);
+                    });
+                });
+
+                // Modal de producto
+                document.getElementById('addProductBtn').addEventListener('click', () => {
+                    this.showProductModal();
+                });
+
+                document.getElementById('cancelProductBtn').addEventListener('click', () => {
+                    this.hideProductModal();
+                });
+
+                document.getElementById('productForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleProductSubmit();
+                });
+
+                // Filtros de productos
+                document.getElementById('productSearch').addEventListener('input', () => {
+                    this.filterProducts();
+                });
+
+                document.getElementById('categoryFilter').addEventListener('change', () => {
+                    this.filterProducts();
+                });
+
+                document.getElementById('stockFilter').addEventListener('change', () => {
+                    this.filterProducts();
+                });
+
+                document.getElementById('clearFilters').addEventListener('click', () => {
+                    this.clearProductFilters();
+                });
+
+                // Event listeners para empleados
+                const addEmployeeBtn = document.getElementById('addEmployeeBtn');
+                if (addEmployeeBtn) {
+                    addEmployeeBtn.addEventListener('click', () => {
+                        this.showEmployeeModal();
+                    });
+                }
+
+                const cancelEmployeeBtn = document.getElementById('cancelEmployeeBtn');
+                if (cancelEmployeeBtn) {
+                    cancelEmployeeBtn.addEventListener('click', () => {
+                        this.hideEmployeeModal();
+                    });
+                }
+
+                const employeeForm = document.getElementById('employeeForm');
+                if (employeeForm) {
+                    employeeForm.addEventListener('submit', (e) => {
+                        this.handleEmployeeSubmit(e);
+                    });
+                }
+
+                // Event listeners para proveedores
+                const addSupplierBtn = document.getElementById('addSupplierBtn');
+                if (addSupplierBtn) {
+                    addSupplierBtn.addEventListener('click', () => {
+                        this.showSupplierModal();
+                    });
+                }
+
+                const cancelSupplierBtn = document.getElementById('cancelSupplierBtn');
+                if (cancelSupplierBtn) {
+                    cancelSupplierBtn.addEventListener('click', () => {
+                        this.hideSupplierModal();
+                    });
+                }
+
+                const supplierForm = document.getElementById('supplierForm');
+                if (supplierForm) {
+                    supplierForm.addEventListener('submit', (e) => {
+                        this.handleSupplierSubmit(e);
+                    });
+                }
+
+                // Event listeners para reportes
+                const generateReportBtn = document.getElementById('generateReportBtn');
+                if (generateReportBtn) {
+                    generateReportBtn.addEventListener('click', () => {
+                        this.generateReport();
+                    });
+                }
+
+                const exportReportBtn = document.getElementById('exportReportBtn');
+                if (exportReportBtn) {
+                    exportReportBtn.addEventListener('click', () => {
+                        this.exportReport();
+                    });
+                }
+            }
+
+            // Maneja la navegación del jefe
+            handleJefeNavigation(section) {
+                // Remover clase activa de todos los botones
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.classList.remove('bg-gray-700');
+                });
+
+                // Agregar clase activa al botón seleccionado
+                document.querySelector(`[data-section="${section}"]`).classList.add('bg-gray-700');
+
+                // Ocultar todas las secciones
+                document.querySelectorAll('[id$="Section"]').forEach(section => {
+                    section.classList.add('hidden');
+                });
+
+                // Mostrar la sección seleccionada
+                const targetSection = document.getElementById(`${section}Section`);
+                if (targetSection) {
+                    targetSection.classList.remove('hidden');
+                }
+
+                // Cargar datos específicos según la sección
+                if (section === 'empleados') {
+                    setTimeout(() => {
+                        this.loadEmployeesList();
+                        this.initializeJefeEventListeners(); // Re-inicializar event listeners
+                    }, 100);
+                } else if (section === 'proveedores') {
+                    setTimeout(() => {
+                        this.loadSuppliersList();
+                        this.initializeJefeEventListeners(); // Re-inicializar event listeners
+                    }, 100);
+                } else if (section === 'reportes') {
+                    setTimeout(() => {
+                        this.initializeReports();
+                        this.initializeJefeEventListeners(); // Re-inicializar event listeners
+                    }, 100);
+                } else if (section === 'productos') {
+                    setTimeout(() => {
+                        this.loadProductsList();
+                    }, 100);
+                }
+
+                console.log(`Navegando a sección: ${section}`);
+            }
+
+            // Maneja las acciones rápidas
+            handleQuickAction(action) {
+                switch(action) {
+                    case 'nueva-venta':
+                        this.handleJefeNavigation('ventas');
+                        break;
+                    case 'agregar-producto':
+                        this.handleJefeNavigation('productos');
+                        setTimeout(() => this.showProductModal(), 100);
+                        break;
+                    case 'nuevo-pedido':
+                        this.handleJefeNavigation('pedidos');
+                        break;
+                    case 'ver-reportes':
+                        this.handleJefeNavigation('reportes');
+                        break;
+                }
+            }
+
+            // Muestra el modal de producto
+            showProductModal(product = null) {
+                const modal = document.getElementById('productModal');
+                const title = document.getElementById('productModalTitle');
+                const form = document.getElementById('productForm');
+
+                if (product) {
+                    title.textContent = 'Editar Producto';
+                    // Llenar formulario con datos del producto
+                    document.getElementById('productName').value = product.name;
+                    document.getElementById('productCode').value = product.code;
+                    document.getElementById('productCategory').value = product.category;
+                    document.getElementById('productBrand').value = product.brand || '';
+                    document.getElementById('productBuyPrice').value = product.buyPrice;
+                    document.getElementById('productSellPrice').value = product.sellPrice;
+                    document.getElementById('productStock').value = product.stock;
+                    document.getElementById('productMinStock').value = product.minStock || '';
+                    document.getElementById('productDescription').value = product.description || '';
+                    form.dataset.editId = product.id;
+                } else {
+                    title.textContent = 'Agregar Producto';
+                    form.reset();
+                    delete form.dataset.editId;
+                }
+
+                modal.classList.remove('hidden');
+            }
+
+            // Oculta el modal de producto
+            hideProductModal() {
+                document.getElementById('productModal').classList.add('hidden');
+                document.getElementById('productForm').reset();
+            }
+
+            // Maneja el envío del formulario de producto
+            handleProductSubmit() {
+                const form = document.getElementById('productForm');
+                const formData = new FormData(form);
+                
+                const productData = {
+                    name: document.getElementById('productName').value,
+                    code: document.getElementById('productCode').value,
+                    category: document.getElementById('productCategory').value,
+                    brand: document.getElementById('productBrand').value,
+                    buyPrice: parseFloat(document.getElementById('productBuyPrice').value),
+                    sellPrice: parseFloat(document.getElementById('productSellPrice').value),
+                    stock: parseInt(document.getElementById('productStock').value),
+                    minStock: parseInt(document.getElementById('productMinStock').value) || 0,
+                    description: document.getElementById('productDescription').value
+                };
+
+                // Validaciones
+                if (!productData.name || !productData.code || !productData.category || 
+                    !productData.buyPrice || !productData.sellPrice || !productData.stock) {
+                    this.showMessage('Por favor complete todos los campos obligatorios', 'error');
+                    return;
+                }
+
+                if (productData.sellPrice <= productData.buyPrice) {
+                    this.showMessage('El precio de venta debe ser mayor al precio de compra', 'error');
+                    return;
+                }
+
+                // Simular guardado
+                if (form.dataset.editId) {
+                    this.showMessage('Producto actualizado correctamente', 'success');
+                } else {
+                    this.showMessage('Producto agregado correctamente', 'success');
+                }
+
+                this.hideProductModal();
+                this.loadSimulatedProducts(); // Recargar tabla
+            }
+
+            // Carga productos simulados
+            loadSimulatedProducts() {
+                const productos = [
+                    {
+                        id: 1,
+                        name: 'Coca Cola 600ml',
+                        code: 'CC600',
+                        category: 'bebidas',
+                        brand: 'Coca Cola',
+                        buyPrice: 12.50,
+                        sellPrice: 18.00,
+                        stock: 3,
+                        minStock: 10
+                    },
+                    {
+                        id: 2,
+                        name: 'Pan Bimbo Grande',
+                        code: 'PB001',
+                        category: 'panaderia',
+                        brand: 'Bimbo',
+                        buyPrice: 28.00,
+                        sellPrice: 35.00,
+                        stock: 8,
+                        minStock: 5
+                    },
+                    {
+                        id: 3,
+                        name: 'Leche Lala 1L',
+                        code: 'LL1000',
+                        category: 'lacteos',
+                        brand: 'Lala',
+                        buyPrice: 22.00,
+                        sellPrice: 28.00,
+                        stock: 15,
+                        minStock: 8
+                    },
+                    {
+                        id: 4,
+                        name: 'Sabritas Original 45g',
+                        code: 'SAB45',
+                        category: 'snacks',
+                        brand: 'Sabritas',
+                        buyPrice: 8.50,
+                        sellPrice: 12.00,
+                        stock: 25,
+                        minStock: 10
+                    },
+                    {
+                        id: 5,
+                        name: 'Fabuloso 1L',
+                        code: 'FAB1000',
+                        category: 'limpieza',
+                        brand: 'Fabuloso',
+                        buyPrice: 35.00,
+                        sellPrice: 45.00,
+                        stock: 0,
+                        minStock: 3
+                    }
+                ];
+
+                this.renderProductsTable(productos);
+            }
+
+            // Renderiza la tabla de productos
+            renderProductsTable(productos) {
+                const tbody = document.getElementById('productsTableBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = productos.map(producto => {
+                    const stockStatus = producto.stock === 0 ? 'agotado' : 
+                                       producto.stock <= producto.minStock ? 'bajo' : 'disponible';
+                    
+                    const stockClass = stockStatus === 'agotado' ? 'bg-red-100 text-red-800' :
+                                      stockStatus === 'bajo' ? 'bg-yellow-100 text-yellow-800' :
+                                      'bg-green-100 text-green-800';
+
+                    const margin = ((producto.sellPrice - producto.buyPrice) / producto.buyPrice * 100).toFixed(1);
+
+                    return `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">${producto.name}</div>
+                                    <div class="text-sm text-gray-500">${producto.brand || 'Sin marca'}</div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${producto.code}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    ${producto.category}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <div>Venta: $${producto.sellPrice.toFixed(2)}</div>
+                                <div class="text-xs text-gray-500">Compra: $${producto.buyPrice.toFixed(2)} (+${margin}%)</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${producto.stock} uds</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${stockClass}">
+                                    ${stockStatus === 'agotado' ? 'Agotado' : 
+                                      stockStatus === 'bajo' ? 'Stock Bajo' : 'Disponible'}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="window.authSystem.showProductModal(${JSON.stringify(producto).replace(/"/g, '&quot;')})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="text-red-600 hover:text-red-900" onclick="window.authSystem.confirmDeleteProduct(${producto.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // Confirma eliminación de producto
+            confirmDeleteProduct(productId) {
+                if (confirm('¿Está seguro de que desea eliminar este producto?')) {
+                    this.showMessage('Producto eliminado correctamente', 'success');
+                    this.loadSimulatedProducts();
+                }
+            }
+
+            // Filtra productos
+            filterProducts() {
+                // Implementar filtrado de productos
+                console.log('Filtrando productos...');
+            }
+
+            // Limpia filtros de productos
+            clearProductFilters() {
+                document.getElementById('productSearch').value = '';
+                document.getElementById('categoryFilter').value = '';
+                document.getElementById('stockFilter').value = '';
+                this.filterProducts();
+            }
+
+            // Muestra el formulario de registro
+            showRegisterForm() {
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('registerForm').classList.remove('hidden');
+            }
+
+            // Funciones para manejar la gestión de empleados
+            showEmployeeModal(employee = null) {
+                const modal = document.getElementById('employeeModal');
+                const form = document.getElementById('employeeForm');
+                const title = document.getElementById('employeeModalTitle');
+                
+                if (employee) {
+                    title.textContent = 'Editar Empleado';
+                    document.getElementById('employeeName').value = employee.fullName || '';
+                    document.getElementById('employeeUsername').value = employee.username || '';
+                    document.getElementById('employeeEmail').value = employee.email || '';
+                    document.getElementById('employeePhone').value = employee.phone || '';
+                    document.getElementById('employeePassword').value = ''; // No mostrar contraseña actual
+                    form.dataset.editingId = employee.id;
+                } else {
+                    title.textContent = 'Agregar Empleado';
+                    form.reset();
+                    delete form.dataset.editingId;
+                }
+                
+                modal.classList.remove('hidden');
+            }
+
+            hideEmployeeModal() {
+                const modal = document.getElementById('employeeModal');
+                modal.classList.add('hidden');
+                document.getElementById('employeeForm').reset();
+            }
+
+            handleEmployeeSubmit(event) {
+                event.preventDefault();
+                const form = event.target;
+                const formData = new FormData(form);
+                
+                const employeeData = {
+                    fullName: document.getElementById('employeeName').value,
+                    username: document.getElementById('employeeUsername').value,
+                    email: document.getElementById('employeeEmail').value,
+                    phone: document.getElementById('employeePhone').value,
+                    password: document.getElementById('employeePassword').value,
+                    role: 'empleado',
+                    joinDate: new Date().toISOString().split('T')[0],
+                    isActive: true
+                };
+
+                let employees = JSON.parse(localStorage.getItem('employees') || '[]');
+                
+                if (form.dataset.editingId) {
+                    // Editar empleado existente
+                    const index = employees.findIndex(emp => emp.id === form.dataset.editingId);
+                    if (index !== -1) {
+                        employeeData.id = form.dataset.editingId;
+                        if (!employeeData.password) {
+                            employeeData.password = employees[index].password; // Mantener contraseña existente
+                        }
+                        employees[index] = { ...employees[index], ...employeeData };
+                        this.showMessage('Empleado actualizado exitosamente', 'success');
+                    }
+                } else {
+                    // Agregar nuevo empleado
+                    employeeData.id = 'emp_' + Date.now();
+                    employees.push(employeeData);
+                    
+                    // También agregar a la lista de usuarios para login
+                    let users = JSON.parse(localStorage.getItem('users') || '[]');
+                    users.push({
+                        id: employeeData.id,
+                        username: employeeData.username,
+                        password: employeeData.password,
+                        role: 'empleado',
+                        fullName: employeeData.fullName,
+                        email: employeeData.email,
+                        storeName: this.currentUser.storeName
+                    });
+                    localStorage.setItem('users', JSON.stringify(users));
+                    
+                    this.showMessage('Empleado agregado exitosamente', 'success');
+                }
+                
+                localStorage.setItem('employees', JSON.stringify(employees));
+                this.hideEmployeeModal();
+                this.loadEmployeesList();
+            }
+
+            loadEmployeesList() {
+                const tbody = document.getElementById('employeesTableBody');
+                if (!tbody) return;
+                
+                const employees = JSON.parse(localStorage.getItem('employees') || '[]');
+                
+                tbody.innerHTML = employees.map(employee => `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-user text-purple-600"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900">${employee.fullName}</div>
+                                    <div class="text-sm text-gray-500">${employee.phone || 'Sin teléfono'}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900">${employee.username}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">${employee.email}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${employee.joinDate}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs rounded-full ${
+                                employee.isActive 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : 'bg-red-100 text-red-800'
+                            }">
+                                ${employee.isActive ? 'Activo' : 'Inactivo'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm space-x-2">
+                            <button class="text-blue-600 hover:text-blue-900" onclick="window.authSystem.showEmployeeModal(${JSON.stringify(employee).replace(/"/g, '&quot;')})">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="text-${employee.isActive ? 'red' : 'green'}-600 hover:text-${employee.isActive ? 'red' : 'green'}-900" onclick="window.authSystem.toggleEmployeeStatus('${employee.id}')">
+                                <i class="fas fa-${employee.isActive ? 'user-slash' : 'user-check'}"></i> ${employee.isActive ? 'Desactivar' : 'Activar'}
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            toggleEmployeeStatus(employeeId) {
+                let employees = JSON.parse(localStorage.getItem('employees') || '[]');
+                const employeeIndex = employees.findIndex(emp => emp.id === employeeId);
+                
+                if (employeeIndex !== -1) {
+                    employees[employeeIndex].isActive = !employees[employeeIndex].isActive;
+                    localStorage.setItem('employees', JSON.stringify(employees));
+                    
+                    // También actualizar en la lista de usuarios
+                    let users = JSON.parse(localStorage.getItem('users') || '[]');
+                    const userIndex = users.findIndex(user => user.id === employeeId);
+                    if (userIndex !== -1) {
+                        users[userIndex].isActive = employees[employeeIndex].isActive;
+                        localStorage.setItem('users', JSON.stringify(users));
+                    }
+                    
+                    this.showMessage(
+                        `Empleado ${employees[employeeIndex].isActive ? 'activado' : 'desactivado'} exitosamente`, 
+                        'success'
+                    );
+                    this.loadEmployeesList();
+                }
+            }
+
+            // Funciones para manejar la gestión de proveedores
+            showSupplierModal(supplier = null) {
+                const modal = document.getElementById('supplierModal');
+                const form = document.getElementById('supplierForm');
+                const title = document.getElementById('supplierModalTitle');
+                
+                if (supplier) {
+                    title.textContent = 'Editar Proveedor';
+                    document.getElementById('supplierCompany').value = supplier.company || '';
+                    document.getElementById('supplierContact').value = supplier.contactPerson || '';
+                    document.getElementById('supplierPhone').value = supplier.phone || '';
+                    document.getElementById('supplierEmail').value = supplier.email || '';
+                    document.getElementById('supplierAddress').value = supplier.address || '';
+                    document.getElementById('supplierProducts').value = supplier.products || '';
+                    document.getElementById('supplierDeliveryDays').value = supplier.deliveryDays || '';
+                    document.getElementById('supplierNotes').value = supplier.notes || '';
+                    form.dataset.editingId = supplier.id;
+                } else {
+                    title.textContent = 'Agregar Proveedor';
+                    form.reset();
+                    delete form.dataset.editingId;
+                }
+                
+                modal.classList.remove('hidden');
+            }
+
+            hideSupplierModal() {
+                const modal = document.getElementById('supplierModal');
+                modal.classList.add('hidden');
+                document.getElementById('supplierForm').reset();
+            }
+
+            handleSupplierSubmit(event) {
+                event.preventDefault();
+                const form = event.target;
+                
+                const supplierData = {
+                    company: document.getElementById('supplierCompany').value,
+                    contactPerson: document.getElementById('supplierContact').value,
+                    phone: document.getElementById('supplierPhone').value,
+                    email: document.getElementById('supplierEmail').value,
+                    address: document.getElementById('supplierAddress').value,
+                    products: document.getElementById('supplierProducts').value,
+                    deliveryDays: document.getElementById('supplierDeliveryDays').value,
+                    notes: document.getElementById('supplierNotes').value,
+                    registrationDate: new Date().toISOString().split('T')[0],
+                    isActive: true
+                };
+
+                let suppliers = JSON.parse(localStorage.getItem('suppliers') || '[]');
+                
+                if (form.dataset.editingId) {
+                    // Editar proveedor existente
+                    const index = suppliers.findIndex(sup => sup.id === form.dataset.editingId);
+                    if (index !== -1) {
+                        supplierData.id = form.dataset.editingId;
+                        suppliers[index] = { ...suppliers[index], ...supplierData };
+                        this.showMessage('Proveedor actualizado exitosamente', 'success');
+                    }
+                } else {
+                    // Agregar nuevo proveedor
+                    supplierData.id = 'sup_' + Date.now();
+                    suppliers.push(supplierData);
+                    this.showMessage('Proveedor agregado exitosamente', 'success');
+                }
+                
+                localStorage.setItem('suppliers', JSON.stringify(suppliers));
+                this.hideSupplierModal();
+                this.loadSuppliersList();
+            }
+
+            loadSuppliersList() {
+                const tbody = document.getElementById('suppliersTableBody');
+                if (!tbody) return;
+                
+                const suppliers = JSON.parse(localStorage.getItem('suppliers') || '[]');
+                
+                tbody.innerHTML = suppliers.map(supplier => `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-building text-orange-600"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900">${supplier.company}</div>
+                                    <div class="text-sm text-gray-500">${supplier.address || 'Sin dirección'}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900">${supplier.contactPerson}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">${supplier.phone}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">${supplier.email}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${supplier.products || 'No especificado'}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs rounded-full ${
+                                supplier.isActive 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : 'bg-red-100 text-red-800'
+                            }">
+                                ${supplier.isActive ? 'Activo' : 'Inactivo'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm space-x-2">
+                            <button class="text-blue-600 hover:text-blue-900" onclick="window.authSystem.showSupplierModal(${JSON.stringify(supplier).replace(/"/g, '&quot;')})">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="text-${supplier.isActive ? 'red' : 'green'}-600 hover:text-${supplier.isActive ? 'red' : 'green'}-900" onclick="window.authSystem.toggleSupplierStatus('${supplier.id}')">
+                                <i class="fas fa-${supplier.isActive ? 'ban' : 'check'}"></i> ${supplier.isActive ? 'Desactivar' : 'Activar'}
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            toggleSupplierStatus(supplierId) {
+                let suppliers = JSON.parse(localStorage.getItem('suppliers') || '[]');
+                const supplierIndex = suppliers.findIndex(sup => sup.id === supplierId);
+                
+                if (supplierIndex !== -1) {
+                    suppliers[supplierIndex].isActive = !suppliers[supplierIndex].isActive;
+                    localStorage.setItem('suppliers', JSON.stringify(suppliers));
+                    
+                    this.showMessage(
+                        `Proveedor ${suppliers[supplierIndex].isActive ? 'activado' : 'desactivado'} exitosamente`, 
+                        'success'
+                    );
+                    this.loadSuppliersList();
+                }
+            }
+
+            // Funciones para manejar reportes
+            generateReport() {
+                const startDate = document.getElementById('reportStartDate').value;
+                const endDate = document.getElementById('reportEndDate').value;
+                const reportType = document.getElementById('reportType').value;
+
+                if (!startDate || !endDate) {
+                    this.showMessage('Por favor selecciona un rango de fechas', 'warning');
+                    return;
+                }
+
+                // Obtener datos para el reporte
+                const sales = JSON.parse(localStorage.getItem('sales') || '[]');
+                const products = JSON.parse(localStorage.getItem('products') || '[]');
+                const employees = JSON.parse(localStorage.getItem('employees') || '[]');
+
+                // Filtrar ventas por fecha
+                const filteredSales = sales.filter(sale => {
+                    const saleDate = sale.fecha.split('T')[0];
+                    return saleDate >= startDate && saleDate <= endDate;
+                });
+
+                this.updateReportMetrics(filteredSales);
+                this.updateTopProducts(filteredSales, products);
+                this.updateEmployeePerformance(filteredSales, employees);
+
+                this.showMessage('Reporte generado exitosamente', 'success');
+            }
+
+            updateReportMetrics(sales) {
+                const totalSales = sales.reduce((sum, sale) => sum + sale.total, 0);
+                const totalTransactions = sales.length;
+                const totalProductsSold = sales.reduce((sum, sale) => 
+                    sum + sale.productos.reduce((prodSum, prod) => prodSum + prod.cantidad, 0), 0);
+                const averageSale = totalTransactions > 0 ? totalSales / totalTransactions : 0;
+
+                document.getElementById('totalSalesReport').textContent = `$${totalSales.toFixed(2)}`;
+                document.getElementById('totalTransactionsReport').textContent = totalTransactions;
+                document.getElementById('totalProductsSoldReport').textContent = totalProductsSold;
+                document.getElementById('averageSaleReport').textContent = `$${averageSale.toFixed(2)}`;
+            }
+
+            updateTopProducts(sales, products) {
+                const productSales = {};
+                
+                sales.forEach(sale => {
+                    sale.productos.forEach(prod => {
+                        if (!productSales[prod.id]) {
+                            productSales[prod.id] = {
+                                name: prod.nombre,
+                                quantity: 0,
+                                total: 0
+                            };
+                        }
+                        productSales[prod.id].quantity += prod.cantidad;
+                        productSales[prod.id].total += prod.cantidad * prod.precio;
+                    });
+                });
+
+                const sortedProducts = Object.values(productSales)
+                    .sort((a, b) => b.quantity - a.quantity)
+                    .slice(0, 5);
+
+                const tbody = document.getElementById('topProductsTableBody');
+                tbody.innerHTML = sortedProducts.map((product, index) => `
+                    <tr>
+                        <td class="px-4 py-2 text-sm text-gray-900">${index + 1}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">${product.name}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">${product.quantity}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">$${product.total.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+            }
+
+            updateEmployeePerformance(sales, employees) {
+                const employeeSales = {};
+                
+                sales.forEach(sale => {
+                    if (!employeeSales[sale.empleado]) {
+                        const employee = employees.find(emp => emp.username === sale.empleado) || 
+                                       { fullName: sale.empleado };
+                        employeeSales[sale.empleado] = {
+                            name: employee.fullName || sale.empleado,
+                            salesCount: 0,
+                            total: 0
+                        };
+                    }
+                    employeeSales[sale.empleado].salesCount++;
+                    employeeSales[sale.empleado].total += sale.total;
+                });
+
+                const sortedEmployees = Object.values(employeeSales)
+                    .sort((a, b) => b.total - a.total);
+
+                const tbody = document.getElementById('employeePerformanceTableBody');
+                tbody.innerHTML = sortedEmployees.map(employee => `
+                    <tr>
+                        <td class="px-4 py-2 text-sm text-gray-900">${employee.name}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">${employee.salesCount}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">$${employee.total.toFixed(2)}</td>
+                    </tr>
+                `).join('');
+            }
+
+            exportReport() {
+                const startDate = document.getElementById('reportStartDate').value;
+                const endDate = document.getElementById('reportEndDate').value;
+                
+                if (!startDate || !endDate) {
+                    this.showMessage('Primero genera un reporte para exportar', 'warning');
+                    return;
+                }
+
+                // Crear contenido del reporte
+                const reportContent = `
+REPORTE DE TIENDA
+=================
+Período: ${startDate} a ${endDate}
+Generado: ${new Date().toLocaleString()}
+
+RESUMEN GENERAL:
+- Ventas Totales: ${document.getElementById('totalSalesReport').textContent}
+- Transacciones: ${document.getElementById('totalTransactionsReport').textContent}
+- Productos Vendidos: ${document.getElementById('totalProductsSoldReport').textContent}
+- Promedio por Venta: ${document.getElementById('averageSaleReport').textContent}
+
+PRODUCTOS MÁS VENDIDOS:
+${Array.from(document.querySelectorAll('#topProductsTableBody tr')).map(row => {
+    const cells = row.querySelectorAll('td');
+    return `${cells[0].textContent}. ${cells[1].textContent} - ${cells[2].textContent} unidades - ${cells[3].textContent}`;
+}).join('\n')}
+
+RENDIMIENTO POR EMPLEADO:
+${Array.from(document.querySelectorAll('#employeePerformanceTableBody tr')).map(row => {
+    const cells = row.querySelectorAll('td');
+    return `${cells[0].textContent}: ${cells[1].textContent} ventas - ${cells[2].textContent}`;
+}).join('\n')}
+                `;
+
+                // Crear y descargar archivo
+                const blob = new Blob([reportContent], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `reporte_${startDate}_${endDate}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                this.showMessage('Reporte exportado exitosamente', 'success');
+            }
+
+            initializeReports() {
+                // Establecer fechas por defecto (último mes)
+                const today = new Date();
+                const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+                
+                document.getElementById('reportEndDate').value = today.toISOString().split('T')[0];
+                document.getElementById('reportStartDate').value = lastMonth.toISOString().split('T')[0];
+
+                // Generar reporte inicial
+                this.generateReport();
+            }
+
+            // Muestra el formulario de login
+            showLoginForm() {
+                document.getElementById('registerForm').classList.add('hidden');
+                document.getElementById('loginForm').classList.remove('hidden');
+            }
+
+            // Muestra mensajes al usuario
+            showMessage(message, type = 'info') {
+                // Crear elemento de mensaje
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+                    type === 'success' ? 'bg-green-500 text-white' :
+                    type === 'error' ? 'bg-red-500 text-white' :
+                    type === 'warning' ? 'bg-yellow-500 text-white' :
+                    'bg-blue-500 text-white'
+                }`;
+                messageDiv.textContent = message;
+
+                document.body.appendChild(messageDiv);
+
+                // Remover después de 3 segundos
+                setTimeout(() => {
+                    if (messageDiv.parentNode) {
+                        messageDiv.parentNode.removeChild(messageDiv);
+                    }
+                }, 3000);
+            }
+        }
+
+        // Inicializar el sistema de autenticación cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            window.authSystem = new AuthSystem();
+            
+            // Inicializar datos de prueba si no existen
+            if (!localStorage.getItem('employees')) {
+                const empleados = [
+                    {
+                        id: 'emp_1',
+                        fullName: 'Ana García López',
+                        username: 'empleado1',
+                        email: 'ana.garcia@tienda.com',
+                        phone: '555-0101',
+                        role: 'empleado',
+                        joinDate: '2024-01-15',
+                        isActive: true
+                    },
+                    {
+                        id: 'emp_2',
+                        fullName: 'Carlos Rodríguez',
+                        username: 'empleado2',
+                        email: 'carlos.rodriguez@tienda.com',
+                        phone: '555-0102',
+                        role: 'empleado',
+                        joinDate: '2024-02-01',
+                        isActive: true
+                    }
+                ];
+                localStorage.setItem('employees', JSON.stringify(empleados));
+            }
+
+            if (!localStorage.getItem('suppliers')) {
+                const proveedores = [
+                    {
+                        id: 'sup_1',
+                        company: 'Distribuidora Central S.A.',
+                        contactPerson: 'María Elena Vásquez',
+                        phone: '555-2001',
+                        email: 'ventas@distribuidoracentral.com',
+                        address: 'Av. Industrial 123, Zona Industrial',
+                        products: 'Bebidas, Snacks, Productos de limpieza',
+                        deliveryDays: 'Lunes, Miércoles, Viernes',
+                        notes: 'Proveedor principal. Descuentos por volumen.',
+                        registrationDate: '2024-01-01',
+                        isActive: true
+                    },
+                    {
+                        id: 'sup_2',
+                        company: 'Panadería Artesanal El Trigo',
+                        contactPerson: 'Roberto Martínez',
+                        phone: '555-2002',
+                        email: 'pedidos@panaderiaeltrigo.com',
+                        address: 'Calle del Pan 45, Centro',
+                        products: 'Pan fresco, Pasteles, Productos de panadería',
+                        deliveryDays: 'Martes, Jueves, Sábado',
+                        notes: 'Entrega temprano en la mañana. Productos frescos.',
+                        registrationDate: '2024-01-10',
+                        isActive: true
+                    },
+                    {
+                        id: 'sup_3',
+                        company: 'Lácteos Valle Verde',
+                        contactPerson: 'Carmen Jiménez',
+                        phone: '555-2003',
+                        email: 'distribución@valleverde.com',
+                        address: 'Km 15 Carretera Norte',
+                        products: 'Leche, Yogurt, Quesos, Mantequilla',
+                        deliveryDays: 'Lunes, Miércoles, Viernes',
+                        notes: 'Productos orgánicos. Requiere refrigeración inmediata.',
+                        registrationDate: '2024-01-05',
+                        isActive: true
+                    }
+                ];
+                localStorage.setItem('suppliers', JSON.stringify(proveedores));
+            }
+
+            console.log('Sistema de autenticación inicializado');
+            console.log('Usuarios de prueba:');
+            console.log('Jefe: usuario="jefe1", contraseña="123456"');
+            console.log('Empleado: usuario="empleado1", contraseña="123456"');
+        });
+    </script>
+</body>
+</html>
