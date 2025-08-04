@@ -3,9 +3,13 @@ version: 2
 services:
   - type: web
     name: tiendita-mejorada
-    runtime: php
+    runtime: docker
     plan: free
-    buildCommand: echo "No build required for PHP"
+    buildCommand: |
+      echo "Installing PHP..."
+      apt-get update
+      apt-get install -y php php-mysql php-json php-mbstring
+      echo "PHP installation complete"
     startCommand: php -S 0.0.0.0:$PORT server.php
     envVars:
       - key: APP_ENV

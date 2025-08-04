@@ -1,28 +1,43 @@
-# 🚨 SOLUCIÓN AL ERROR DE DEPLOY EN RENDER
+# 🚨 SOLUCIÓN AL ERROR "php: command not found" EN RENDER
 
 ## ❌ **Error Actual:**
 ```
-SyntaxError: Token inesperado '<'
+bash: line 1: php: command not found
 ```
 
 ## 🔍 **Causa del Problema:**
-Render está intentando ejecutar tu proyecto como **Node.js** cuando debería ser **PHP**.
+Render está usando un entorno **Node.js** que no tiene PHP instalado.
 
-## ✅ **SOLUCIÓN PASO A PASO:**
+## ✅ **SOLUCIÓN DEFINITIVA:**
 
-### **1. Ir al Dashboard de Render**
-- Entra a tu cuenta de Render
-- Ve a tu servicio "tiendita-mejorada"
+### **OPCIÓN 1: Usar Docker (RECOMENDADO)**
 
-### **2. Cambiar Configuración**
-En la sección **Settings**:
+1. **En Render Dashboard:**
+   - Environment: `Docker`
+   - Build Command: (vacío)
+   - Start Command: (se detecta automáticamente del Dockerfile)
 
-**Environment:**
-- Cambiar de `Node` a `PHP`
+### **OPCIÓN 2: Cambiar Settings Manualmente**
 
-**Build & Deploy:**
-- **Build Command:** (dejar vacío o poner `echo "Build complete"`)
-- **Start Command:** `php -S 0.0.0.0:$PORT server.php`
+1. **En Render Dashboard > Settings:**
+   - **Environment:** Cambiar a `Static Site` o `Python` temporalmente, luego a `PHP`
+   - **Build Command:** (vacío)
+   - **Start Command:** `bash start.sh`
+
+### **OPCIÓN 3: Crear Nuevo Servicio**
+
+1. **Eliminar servicio actual** en Render
+2. **Crear nuevo Web Service**
+3. **Al crearlo, seleccionar:**
+   - **Environment:** `Docker` o `PHP`
+   - **Repository:** hackerchafa/Tienditas
+
+## 📝 **Archivos Agregados:**
+- ✅ `Dockerfile` - Configuración Docker con PHP
+- ✅ `start.sh` - Script de inicio alternativo  
+- ✅ `composer.json` - Especifica PHP requerido
+- ✅ `.php-version` - Fuerza versión PHP
+- ✅ `.buildpacks` - Buildpack de PHP
 
 ### **3. Variables de Entorno**
 Agregar estas variables en la sección **Environment Variables**:
