@@ -32,10 +32,18 @@ git push -u origin main
 
 ### **3. Configuración del Servicio en Render**
 
+**IMPORTANTE: Configurar como PHP Web Service, NO como Node.js**
+
 **Build & Deploy:**
-- **Build Command:** (dejar vacío)
+- **Environment:** `PHP`
+- **Build Command:** (dejar vacío o poner: `echo "No build required"`)
 - **Start Command:** `php -S 0.0.0.0:$PORT server.php`
-- **Publish Directory:** (dejar vacío)
+- **Auto-Deploy:** `Yes`
+
+**Si aparece error "Token inesperado '<'":**
+- Verificar que está seleccionado **PHP** como runtime
+- El start command debe ser: `php -S 0.0.0.0:$PORT server.php`
+- NO debe intentar ejecutar Node.js
 
 **Environment Variables (CRÍTICO):**
 ```

@@ -1,34 +1,14 @@
-# Configuración para Render
-# Este archivo define cómo se despliega la aplicación
+version: 2
 
-# Comando de construcción
-build:
-  - composer install --no-dev --optimize-autoloader || echo "No composer.json found"
-  - echo "Build completed"
-
-# Comando de inicio
-start: php -S 0.0.0.0:$PORT server.php
-
-# Variables de entorno necesarias (configurar en Render Dashboard)
-environment:
-  - DB_HOST
-  - DB_PORT
-  - DB_NAME  
-  - DB_USER
-  - DB_PASSWORD
-  - APP_ENV=production
-  - APP_DEBUG=false
-
-# Configuración del servicio
-service:
-  type: web
-  runtime: php
-  plan: free
-
-# Archivos a ignorar en el despliegue
-ignore:
-  - .env
-  - logs/
-  - cache/
-  - backups/
-  - test-*.php
+services:
+  - type: web
+    name: tiendita-mejorada
+    runtime: php
+    plan: free
+    buildCommand: echo "No build required for PHP"
+    startCommand: php -S 0.0.0.0:$PORT server.php
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
