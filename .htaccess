@@ -9,9 +9,11 @@ RewriteCond %{REQUEST_URI} ^/api/
 RewriteRule ^api/(.*)$ api/index.php [QSA,L]
 
 # Configuración de CORS para permitir peticiones desde el frontend
-Header always set Access-Control-Allow-Origin "*"
-Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
+</IfModule>
 
 # Configuración de cache para archivos estáticos
 <IfModule mod_expires.c>
