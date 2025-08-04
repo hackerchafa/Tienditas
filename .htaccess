@@ -55,10 +55,6 @@ RewriteRule ^api/(.*)$ api/index.php [QSA,L]
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
 
-# Ocultar información del servidor
-ServerTokens Prod
-Header unset Server
-
 # Configuración de páginas de error personalizadas
 ErrorDocument 404 /error-404.html
 ErrorDocument 500 /error-500.html
@@ -73,20 +69,17 @@ ErrorDocument 500 /error-500.html
 </IfModule>
 
 # Proteger archivos sensibles
-<Files ~ "^\.">
-    Order allow,deny
-    Deny from all
-</Files>
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
 
-<Files ~ "config\.php$">
-    Order allow,deny
-    Deny from all
-</Files>
+<FilesMatch "config\.php$">
+    Require all denied
+</FilesMatch>
 
-<Files ~ "\.sql$">
-    Order allow,deny
-    Deny from all
-</Files>
+<FilesMatch "\.sql$">
+    Require all denied
+</FilesMatch>
 
 # Habilitar HTTPS redirect (opcional)
 # RewriteCond %{HTTPS} off
