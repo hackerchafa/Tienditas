@@ -5,12 +5,7 @@ services:
     name: tiendita-mejorada
     runtime: docker
     plan: free
-    buildCommand: |
-      echo "Installing PHP..."
-      apt-get update
-      apt-get install -y php php-mysql php-json php-mbstring
-      echo "PHP installation complete"
-    startCommand: php -S 0.0.0.0:$PORT server.php
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: APP_ENV
         value: production
