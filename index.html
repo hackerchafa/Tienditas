@@ -286,21 +286,21 @@
             // Maneja el proceso de registro (solo jefes)
             async handleRegister() {
                 const formData = {
-                    username: document.getElementById('registerUsername').value.trim(),
+                    usuario: document.getElementById('registerUsername').value.trim(),
                     password: document.getElementById('registerPassword').value,
                     nombre_completo: document.getElementById('registerName').value.trim(),
                     email: document.getElementById('registerEmail').value.trim(),
-                    tienda_nombre: document.getElementById('registerStoreName').value.trim()
+                    nombre_tienda: document.getElementById('registerStoreName').value.trim()
                 };
 
                 // Validaciones
-                if (!formData.username || !formData.password || !formData.nombre_completo || 
-                    !formData.email || !formData.tienda_nombre) {
+                if (!formData.usuario || !formData.password || !formData.nombre_completo || 
+                    !formData.email || !formData.nombre_tienda) {
                     this.showMessage('Por favor complete todos los campos', 'error');
                     return;
                 }
 
-                if (!window.dbConnector.constructor.validateEmail(formData.email)) {
+                if (!DatabaseConnector.validateEmail(formData.email)) {
                     this.showMessage('Por favor ingrese un email válido', 'error');
                     return;
                 }

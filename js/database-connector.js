@@ -113,6 +113,56 @@ class DatabaseConnector {
     }
 
     /**
+     * Manejar formulario de registro
+     */
+    async handleRegister(event) {
+        if (event) {
+            event.preventDefault();
+        }
+
+        const form = event ? event.target : document.getElementById('registerFormElement');
+        if (!form) {
+            console.error('Formulario de registro no encontrado');
+            return false;
+        }
+
+        const formData = new FormData(form);
+        const userData = {
+            nombre_completo: formData.get('nombre_completo'),
+            usuario: formData.get('usuario'),
+            email: formData.get('email'),
+            nombre_tienda: formData.get('nombre_tienda'),
+            password: formData.get('password')
+        };
+
+        // Validaciones
+        if (!userData.nombre_completo || !userData.usuario || !userData.email || !userData.password) {
+            this.showMessage('Todos los campos son obligatorios', 'error');
+            return false;
+        }
+
+        if (!DatabaseConnector.validateEmail(userData.email)) {
+            this.showMessage('Por favor ingrese un email válido', 'error');
+            return false;
+        }
+
+        try {
+            const response = await this.register(userData);
+            if (response.success) {
+                this.showMessage('Registro exitoso. Ahora puede iniciar sesión.', 'success');
+                form.reset();
+                return true;
+            } else {
+                this.showMessage(response.error || 'Error en el registro', 'error');
+                return false;
+            }
+        } catch (error) {
+            this.showMessage('Error: ' + error.message, 'error');
+            return false;
+        }
+    }
+
+    /**
      * Productos - Obtener todos
      */
     async getProducts(filters = {}) {
@@ -553,6 +603,30 @@ class DatabaseConnector {
             this.token = null;
             localStorage.removeItem('auth_token');
             localStorage.removeItem('current_user');
+        }
+    }
+
+    /**
+     * Método estático para validar email
+     */
+    static validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    /**
+     * Método estático para manejar registros
+     */
+    static handleRegister(event) {
+        if (event) {
+            event.preventDefault();
+        }
+        
+        if (window.dbConnector && typeof window.dbConnector.handleRegister === 'function') {
+            return window.dbConnector.handleRegister(event);
+        } else {
+            console.error('DatabaseConnector no está disponible');
+            return false;
         }
     }
 }
